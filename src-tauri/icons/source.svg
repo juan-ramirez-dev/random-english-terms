@@ -1,0 +1,33 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15295c"/>
+      <stop offset="0.55" stop-color="#0d1b40"/>
+      <stop offset="1" stop-color="#0a1430"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.44" r="0.5">
+      <stop offset="0" stop-color="#f2c14e" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#f2c14e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="228" fill="url(#night)"/>
+
+  <!-- Swirling night currents -->
+  <g fill="none" stroke="#5b8dd9" stroke-width="18" stroke-linecap="round" opacity="0.5">
+    <path d="M150 720 C 300 640, 420 760, 560 700 S 820 640, 900 720"/>
+    <path d="M150 800 C 320 740, 440 840, 600 790 S 840 740, 900 800"/>
+  </g>
+
+  <!-- The glow behind the star -->
+  <circle cx="512" cy="450" r="320" fill="url(#glow)"/>
+
+  <!-- Big star -->
+  <path fill="#f2c14e" d="M512 196 l58 128 140 18 -104 94 27 142 -121 -70 -121 70 27 -142 -104 -94 140 -18 z"/>
+
+  <!-- Small stars -->
+  <circle cx="246" cy="300" r="20" fill="#f2c14e" opacity="0.9"/>
+  <circle cx="792" cy="330" r="14" fill="#eef2ff" opacity="0.85"/>
+  <circle cx="360" cy="520" r="10" fill="#eef2ff" opacity="0.7"/>
+  <circle cx="710" cy="560" r="12" fill="#5b8dd9" opacity="0.9"/>
+</svg>
