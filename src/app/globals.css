@@ -1,50 +1,42 @@
 /*
  * Design tokens. The only place where literal colors are written.
  * Everything else uses var(--token). See AGENTS.md §6.
- * Look: Van Gogh "Starry Night" — deep night blues, star gold, swirl blue.
- * Native-macOS feel: system fonts, translucent layered surfaces, calm motion.
+ * Look: a reader's private lexicon — warm ink, paper text, hairlines over shadows.
  * Dark only.
  */
 :root {
   color-scheme: dark;
 
   /* Colors */
-  --color-bg: #0b1733;
-  --color-surface: #16244a;
-  --color-surface-2: #1b2c57;
-  --color-field: #1b2c57;
-  --color-border: #2a3d70;
-  --color-track: #1f3061;
-  --color-text: #eef2ff;
-  --color-text-muted: #9fb0d8;
-  --color-text-inverse: #0b1733;
+  --color-bg: #0e0d0b;
+  --color-surface: #17150f;
+  --color-surface-2: #1c1a13;
+  --color-field: #1c1a13;
+  --color-border: #2b2820;
+  --color-track: #231f16;
+  --color-text: #f3efe6;
+  --color-text-muted: #948d7b;
+  --color-text-inverse: #0e0d0b;
 
-  --color-primary: #f2c14e;
-  --color-primary-hover: #e6b23c;
-  --color-primary-soft: rgb(242 193 78 / 0.14);
+  --color-primary: #b9975b;
+  --color-primary-hover: #a8854a;
+  --color-primary-soft: rgb(185 151 91 / 0.14);
 
-  --color-accent: #5b8dd9;
-  --color-accent-soft: rgb(91 141 217 / 0.16);
+  --color-accent: #6e8ca0;
+  --color-accent-soft: rgb(110 140 160 / 0.14);
 
   /* Decisions */
-  --color-known: #5b8dd9;
-  --color-known-soft: rgb(91 141 217 / 0.16);
-  --color-learning: #f2c14e;
-  --color-learning-soft: rgb(242 193 78 / 0.14);
+  --color-known: #6e8ca0;
+  --color-known-soft: rgb(110 140 160 / 0.14);
+  --color-learning: #b9975b;
+  --color-learning-soft: rgb(185 151 91 / 0.14);
 
-  --color-danger: #e5686d;
-  --color-danger-soft: rgb(229 104 109 / 0.16);
-  --color-overlay: rgb(6 12 28 / 0.6);
+  --color-danger: #b5534c;
+  --color-danger-soft: rgb(181 83 76 / 0.16);
+  --color-overlay: rgb(8 7 5 / 0.65);
 
-  /* Translucent surfaces: let the macOS vibrancy sidebar show when present. */
-  --glass-sidebar: rgb(13 24 52 / 0.72);
-  --glass-bar: rgb(11 23 51 / 0.55);
-
-  /* Shadows: deep night, faintly blue. */
-  --shadow-sm: 0 1px 2px rgb(3 8 20 / 0.4), 0 8px 24px rgb(3 8 20 / 0.28);
-  --shadow-md: 0 2px 4px rgb(3 8 20 / 0.4), 0 20px 48px rgb(3 8 20 / 0.45);
-  --shadow-lg: 0 32px 80px rgb(3 8 20 / 0.55);
-  --glow: 0 0 40px rgb(242 193 78 / 0.18);
+  /* Shadow: reserved for the one floating surface (the modal). Everything else uses hairlines. */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.24);
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -58,12 +50,13 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Type: native macOS stack + Apple's "New York" serif for display. */
+  /* Type: self-hosted via next/font/google (see layout.tsx), system fallbacks after. */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui,
-    sans-serif;
+    var(--font-instrument-sans), -apple-system, BlinkMacSystemFont,
+    'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
   --font-display:
-    ui-serif, 'New York', 'Iowan Old Style', Palatino, Georgia, serif;
+    var(--font-fraunces), ui-serif, 'New York', 'Iowan Old Style', Palatino,
+    Georgia, serif;
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -74,7 +67,6 @@
   --text-3xl: 3.5rem;
   --text-4xl: 4.5rem;
   --tracking-tight: -0.02em;
-  --tracking-wide: 0.08em;
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
@@ -115,20 +107,7 @@ body {
   line-height: 1.5;
   font-variant-numeric: lining-nums tabular-nums;
   -webkit-font-smoothing: antialiased;
-  /* A faint night sky: two soft glows over deep blue. */
   background-color: var(--color-bg);
-  background-image:
-    radial-gradient(
-      60rem 40rem at 78% -10%,
-      rgb(91 141 217 / 0.22),
-      transparent 60%
-    ),
-    radial-gradient(
-      50rem 36rem at 8% 108%,
-      rgb(242 193 78 / 0.08),
-      transparent 55%
-    );
-  background-attachment: fixed;
 }
 
 button,

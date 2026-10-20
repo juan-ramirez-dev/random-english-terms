@@ -59,107 +59,89 @@
   max-width: 34ch;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--space-4);
+.list {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.card {
+.row {
   position: relative;
-  border-radius: var(--radius-md);
-  transition: transform var(--duration-fast) var(--ease);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-}
-
-.cardMain {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  width: 100%;
-  min-height: 150px;
-  padding: var(--space-5);
+  align-items: center;
+  border-bottom: var(--line-soft);
+}
+
+.rowMain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) 0;
   text-align: left;
   color: var(--color-text);
-  background: var(--color-surface);
-  border: var(--line-soft);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  background: none;
+  border: none;
   cursor: pointer;
-  transition:
-    border-color var(--duration-fast) var(--ease),
-    box-shadow var(--duration-fast) var(--ease);
+  transition: color var(--duration-fast) var(--ease);
 }
 
-.cardMain:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
+.rowMain:hover {
+  color: var(--color-primary);
 }
 
-.cardTitle {
+.rowTitle {
+  overflow: hidden;
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.meta {
-  margin-top: auto;
+.rowMeta {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: var(--space-4);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
 .badge {
-  align-self: flex-start;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
   color: var(--color-primary);
-  background: var(--color-primary-soft);
-  border-radius: var(--radius-full);
 }
 
 .badgeDone {
-  align-self: flex-start;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
   color: var(--color-known);
-  background: var(--color-known-soft);
-  border-radius: var(--radius-full);
 }
 
 .remove {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
   display: grid;
+  flex: none;
   place-items: center;
   width: 30px;
   height: 30px;
+  margin-left: var(--space-2);
   color: var(--color-text-muted);
-  background: var(--color-surface-2);
+  background: none;
   border: none;
-  border-radius: var(--radius-full);
   opacity: 0;
   cursor: pointer;
   transition:
     opacity var(--duration-fast) var(--ease),
-    color var(--duration-fast) var(--ease),
-    background var(--duration-fast) var(--ease);
+    color var(--duration-fast) var(--ease);
 }
 
-.card:hover .remove {
+.row:hover .remove {
   opacity: 1;
 }
 
 .remove:hover {
   color: var(--color-danger);
-  background: var(--color-danger-soft);
 }
