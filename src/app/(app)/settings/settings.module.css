@@ -101,6 +101,18 @@
   word-break: break-all;
 }
 
+.updateRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.updateStatus {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .hint {
   margin: 0 0 var(--space-4);
   color: var(--color-text-muted);

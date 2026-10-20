@@ -13,6 +13,7 @@ export const en = {
     delete: 'Delete',
     back: 'Back',
     of: 'of',
+    notNow: 'Not now',
   },
 
   nav: {
@@ -91,6 +92,16 @@ export const en = {
     deleteAllMessage:
       'All your texts and words get deleted from this computer.',
     deleteAllOk: 'Delete everything',
+  },
+
+  update: {
+    check: 'Check for updates',
+    checking: 'Checking…',
+    upToDate: "You're up to date.",
+    failed: "Couldn't update. Try again.",
+    available: (version: string) => `A new version is out (${version}).`,
+    updating: 'Updating…',
+    update: 'Update',
   },
 
   errors: {
