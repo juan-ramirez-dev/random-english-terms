@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [feedback, staging, main]
+  # release.yml reuses it: if it fails, nothing is published.
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 🟦 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 📦 Install
+        run: pnpm install --frozen-lockfile
+
+      - name: 📏 Lint
+        run: pnpm lint
+
+      - name: 🎨 Prettier
+        run: pnpm format:check
+
+      - name: 🔎 Types
+        run: pnpm typecheck
+
+      - name: 🧪 Tests
+        run: pnpm test
+
+      - name: 🏗️ Build
+        run: pnpm build
+
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐧 Tauri dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: 💾 Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: 🔎 cargo check
+        run: cargo check --manifest-path src-tauri/Cargo.toml --locked
+
+      - name: 📏 cargo clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --locked -- -D warnings

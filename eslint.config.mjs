@@ -1,0 +1,84 @@
+import css from '@eslint/css'
+import comments from '@eslint-community/eslint-plugin-eslint-comments/configs'
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
+import nextTypescript from 'eslint-config-next/typescript'
+import prettierRecommended from 'eslint-plugin-prettier/recommended'
+import { defineConfig, globalIgnores } from 'eslint/config'
+import kebabCaseFilename from './eslint-rules/kebab-case-filename.mjs'
+import noHardcodedColorsCss from './eslint-rules/no-hardcoded-colors-css.mjs'
+import noHardcodedColors from './eslint-rules/no-hardcoded-colors.mjs'
+
+// House rules: what AGENTS.md says, enforced by lint.
+const house = {
+  rules: {
+    'kebab-case-filename': kebabCaseFilename,
+    'no-hardcoded-colors': noHardcodedColors,
+    'no-hardcoded-colors-css': noHardcodedColorsCss,
+  },
+}
+
+export default defineConfig([
+  globalIgnores([
+    '.next/**',
+    'out/**',
+    'src-tauri/target/**',
+    'src-tauri/gen/**',
+    'build/**',
+    'coverage/**',
+    'public/**',
+    'next-env.d.ts',
+  ]),
+  {
+    files: ['**/*.{js,jsx,mjs,ts,tsx}'],
+    plugins: { house },
+    extends: [
+      ...nextCoreWebVitals,
+      ...nextTypescript,
+      comments.recommended,
+      prettierRecommended,
+    ],
+    rules: {
+      'house/kebab-case-filename': 'error',
+      'house/no-hardcoded-colors': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': true,
+          'ts-expect-error': true,
+          'ts-nocheck': true,
+          'ts-check': false,
+        },
+      ],
+      // Rules can't be silenced with comments.
+      '@eslint-community/eslint-comments/no-use': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+    },
+  },
+  // The rules quote colors in their own messages.
+  {
+    files: ['eslint-rules/**'],
+    rules: { 'house/no-hardcoded-colors': 'off' },
+  },
+  // CSS: only used for the color rule.
+  {
+    files: ['**/*.css'],
+    language: 'css/css',
+    languageOptions: { tolerant: true },
+    plugins: { css, house },
+    rules: { 'house/no-hardcoded-colors-css': 'error' },
+  },
+  // The single source of truth for colors.
+  {
+    files: ['src/app/globals.css'],
+    rules: { 'house/no-hardcoded-colors-css': 'off' },
+  },
+])
