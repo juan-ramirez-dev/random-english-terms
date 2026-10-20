@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/modal'
 import { deleteAllTexts } from '@/lib/api-client/library'
 import { usePreferences } from '@/lib/i18n/context'
 import { LANGUAGES } from '@/lib/i18n/locale'
+import { useUpdate } from '../update-provider'
 import styles from './settings.module.css'
 
 const APP_VERSION = '0.2.0'
@@ -14,6 +15,7 @@ const DATA_FILE = '~/Library/Application Support/dev.juanramirez.lexio/lexio.db'
 export default function SettingsPage() {
   const { t, prefs, setLanguage } = usePreferences()
   const [confirming, setConfirming] = useState(false)
+  const { update, checked, isChecking, checkForUpdate } = useUpdate()
 
   const wipe = async () => {
     await deleteAllTexts()
@@ -58,6 +60,16 @@ export default function SettingsPage() {
             <dd className={styles.mono}>{DATA_FILE}</dd>
           </div>
         </dl>
+        <div className={styles.updateRow}>
+          <Button variant="soft" onClick={checkForUpdate} disabled={isChecking}>
+            {isChecking ? t.update.checking : t.update.check}
+          </Button>
+          {!isChecking && checked && (
+            <span className={styles.updateStatus}>
+              {update ? t.update.available(update.version) : t.update.upToDate}
+            </span>
+          )}
+        </div>
       </section>
 
       <section className={styles.card}>

@@ -13,6 +13,7 @@ export const es: Messages = {
     delete: 'Eliminar',
     back: 'Atrás',
     of: 'de',
+    notNow: 'Ahora no',
   },
 
   nav: {
@@ -95,6 +96,16 @@ export const es: Messages = {
     deleteAllMessage:
       'Se borran todos tus textos y palabras de este computador.',
     deleteAllOk: 'Eliminar todo',
+  },
+
+  update: {
+    check: 'Buscar actualizaciones',
+    checking: 'Buscando…',
+    upToDate: 'Ya tienes la última versión.',
+    failed: 'No se pudo actualizar. Intenta de nuevo.',
+    available: (version: string) => `Hay una versión nueva (${version}).`,
+    updating: 'Actualizando…',
+    update: 'Actualizar',
   },
 
   errors: {
