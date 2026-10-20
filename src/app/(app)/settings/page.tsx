@@ -9,7 +9,7 @@ import { LANGUAGES } from '@/lib/i18n/locale'
 import { useUpdate } from '../update-provider'
 import styles from './settings.module.css'
 
-const APP_VERSION = '0.2.0'
+const APP_VERSION = '0.3.0'
 const DATA_FILE = '~/Library/Application Support/dev.juanramirez.lexio/lexio.db'
 
 export default function SettingsPage() {

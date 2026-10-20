@@ -1,6 +1,6 @@
 [package]
 name = "lexio"
-version = "0.2.0"
+version = "0.3.0"
 description = "English vocabulary from your own readings"
 authors = ["Juan Ramirez"]
 license = "MIT"
