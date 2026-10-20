@@ -15,7 +15,15 @@ Read all of it before planning or writing code.
 
 ---
 
-## 1. How to write (the most important part)
+## 1. CI/CD and releases
+
+- Every PR that lands on `main` bumps the version, everywhere it's written: `package.json`, `src-tauri/Cargo.toml` (+ regenerate `Cargo.lock`, don't hand-edit it), `src-tauri/tauri.conf.json`, and `APP_VERSION` in `src/app/(app)/settings/page.tsx`.
+- `release.yml` reads that version and skips publishing if the tag already exists. No bump → the push runs CI, passes, and ships nothing. Silently.
+- Past incident: PR #4 merged without a bump. CI was green, but the release step skipped — the published build didn't have that PR's code. Fixed with a version-only follow-up PR (#5). Don't repeat it.
+
+---
+
+## 2. How to write (the most important part)
 
 People reading this repo get tired of long paragraphs. Keep every text short.
 Applies to: plans, replies, `.md` files, comments, commits and PRs.
@@ -30,7 +38,7 @@ Applies to: plans, replies, `.md` files, comments, commits and PRs.
 
 ---
 
-## 2. Plans
+## 3. Plans
 
 Every plan follows this format. Nothing else.
 
@@ -73,7 +81,7 @@ Rules:
 
 ---
 
-## 3. Unit tests
+## 4. Unit tests
 
 - **jest** only. The file lives next to the code: `my-file.test.ts`.
 - **Before writing tests, ask** which cases to test:
@@ -93,7 +101,7 @@ Run: `pnpm test`.
 
 ---
 
-## 4. Stack and structure
+## 5. Stack and structure
 
 - Local-first desktop app: **Tauri v2** (macOS + Windows).
 - UI: Next.js 16 as a static site (`output: 'export'` → `out/`), React 19, strict TypeScript, **pnpm**.
@@ -111,7 +119,7 @@ Run: `pnpm test`.
 
 ---
 
-## 5. Data and permissions
+## 6. Data and permissions
 
 - No auth or roles: one user per computer.
 - Data is stored in plain text in the user's SQLite file. It never leaves the machine.
@@ -122,7 +130,7 @@ Run: `pnpm test`.
 
 ---
 
-## 6. CSS
+## 7. CSS
 
 - **No Tailwind.** CSS Modules (`file.module.css`) + variables.
 - Colors, spacing and fonts come from `src/app/globals.css` through `var(--token)`.
@@ -131,7 +139,7 @@ Run: `pnpm test`.
 
 ---
 
-## 7. Copy
+## 8. Copy
 
 - Every text the user sees lives in `src/lib/i18n/en.ts` and `es.ts`. Never in a component.
   - Write the English one first. TypeScript flags a key missing in `es.ts`.
@@ -139,7 +147,7 @@ Run: `pnpm test`.
 
 ---
 
-## 8. Database
+## 9. Database
 
 - Schema change = a new file in `src-tauri/migrations/` (`0003_name.sql`) + register it in `src-tauri/src/lib.rs` with the next version.
 - Never edit a merged migration, not even a comment.
@@ -149,7 +157,7 @@ Run: `pnpm test`.
 
 ---
 
-## 9. Git
+## 10. Git
 
 - Protected branches: `main`, `staging`, `feedback`. **Never push directly.** Branch + PR.
 - **Never** skip hooks: no `--no-verify`, `-n`, `HUSKY=0`.
@@ -157,7 +165,7 @@ Run: `pnpm test`.
 
 ---
 
-## 10. Banned
+## 11. Banned
 
 - Tailwind or any CSS utility library.
 - `any`. Use the real type or `unknown` + validation.
@@ -169,7 +177,7 @@ Run: `pnpm test`.
 
 ---
 
-## 11. Definition of done
+## 12. Definition of done
 
 A task is NOT done if any of this fails:
 
