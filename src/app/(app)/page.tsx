@@ -62,27 +62,27 @@ export default function LibraryPage() {
       )}
 
       {texts && texts.length > 0 && (
-        <ul className={styles.grid}>
+        <ul className={styles.list}>
           {texts.map(text => (
-            <li key={text.id} className={styles.card}>
+            <li key={text.id} className={styles.row}>
               <button
                 type="button"
-                className={styles.cardMain}
+                className={styles.rowMain}
                 onClick={() => review(text)}
                 aria-label={t.library.open(text.title)}
               >
-                <span className={styles.cardTitle}>{text.title}</span>
-                <span className={styles.meta}>
-                  {t.library.terms(text.termCount)}
-                </span>
-                <span
-                  className={
-                    text.newCount > 0 ? styles.badge : styles.badgeDone
-                  }
-                >
-                  {text.newCount > 0
-                    ? t.library.toReview(text.newCount)
-                    : t.library.allReviewed}
+                <span className={styles.rowTitle}>{text.title}</span>
+                <span className={styles.rowMeta}>
+                  <span>{t.library.terms(text.termCount)}</span>
+                  <span
+                    className={
+                      text.newCount > 0 ? styles.badge : styles.badgeDone
+                    }
+                  >
+                    {text.newCount > 0
+                      ? t.library.toReview(text.newCount)
+                      : t.library.allReviewed}
+                  </span>
                 </span>
               </button>
               <button
