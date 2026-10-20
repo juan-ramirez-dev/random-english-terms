@@ -1,6 +1,6 @@
 [package]
 name = "lexio"
-version = "0.3.0"
+version = "0.4.0"
 description = "English vocabulary from your own readings"
 authors = ["Juan Ramirez"]
 license = "MIT"
@@ -24,6 +24,13 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-process = "2"
+# AI: validate online keys (HTTP) and download local models to disk.
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "stream", "json"] }
+tokio = { version = "1.53.3", features = ["fs", "io-util", "time"] }
+futures-util = "0.3.34"
+sha2 = "0.11.1"
+# API keys live in the OS keychain, never in SQLite or logs.
+keyring = "4.2.0"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

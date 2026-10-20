@@ -7,9 +7,10 @@ import { deleteAllTexts } from '@/lib/api-client/library'
 import { usePreferences } from '@/lib/i18n/context'
 import { LANGUAGES } from '@/lib/i18n/locale'
 import { useUpdate } from '../update-provider'
+import { AiSettings } from './ai-settings'
 import styles from './settings.module.css'
 
-const APP_VERSION = '0.3.0'
+const APP_VERSION = '0.4.0'
 const DATA_FILE = '~/Library/Application Support/dev.juanramirez.lexio/lexio.db'
 
 export default function SettingsPage() {
@@ -46,6 +47,11 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>{t.settings.ai}</h2>
+        <AiSettings />
       </section>
 
       <section className={styles.card}>

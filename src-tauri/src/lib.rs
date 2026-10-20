@@ -1,3 +1,9 @@
+mod ai;
+mod error;
+mod models;
+
+use std::time::Duration;
+
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 // Same URL as src/lib/local-db/db.ts. Migrations run when it opens.
@@ -18,7 +24,19 @@ pub fn run() {
             sql: include_str!("../migrations/0002_preferences.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "ai_choice",
+            sql: include_str!("../migrations/0003_ai_choice.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
+
+    // No global timeout: downloading a model takes a while. Only a connect timeout.
+    let http = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(15))
+        .build()
+        .expect("could not build the HTTP client");
 
     let mut builder = tauri::Builder::default();
 
@@ -38,6 +56,14 @@ pub fn run() {
                 .add_migrations(DB_URL, migrations)
                 .build(),
         )
+        .manage(http)
+        .invoke_handler(tauri::generate_handler![
+            models::models_status,
+            models::model_download,
+            models::model_delete,
+            ai::ai_save_key,
+            ai::ai_delete_key,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
