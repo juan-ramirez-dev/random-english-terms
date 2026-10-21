@@ -2,10 +2,13 @@ import type { SVGProps } from 'react'
 
 // 24px line icons. No library: there are few and they don't change.
 const PATHS = {
-  library: 'M4 5h5v14H4zM11 5h4v14h-4zM17.5 6l3 12-3.5 1-3-12z',
-  study:
+  home: 'M4 11l8-7 8 7M6 9.5V20h12V9.5',
+  practice: 'M13 3L5 13.5h6L10 21l9-11h-6.5z',
+  material:
     'M4 6a2 2 0 0 1 2-2h5v15H6a2 2 0 0 0-2 2zM20 6a2 2 0 0 0-2-2h-5v15h5a2 2 0 0 1 2 2z',
-  words: 'M5 5h14M5 10h14M5 15h9',
+  progress: 'M5 20V12M12 20V5M19 20v-5',
+  flame:
+    'M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.5 1 2 1.8 2C10.5 8.5 11 5.5 12 3z',
   settings: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
   plus: 'M12 5v14M5 12h14',
   close: 'M6 6l12 12M18 6L6 18',

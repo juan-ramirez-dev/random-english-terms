@@ -6,7 +6,7 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <ViewTransition name="brand">
       <span className={[styles.wordmark, className].filter(Boolean).join(' ')}>
-        Lexio
+        Lexio<span className={styles.dot}>.</span>
       </span>
     </ViewTransition>
   )

@@ -1,42 +1,59 @@
 /*
  * Design tokens. The only place where literal colors are written.
  * Everything else uses var(--token). See AGENTS.md §6.
- * Look: a reader's private lexicon — warm ink, paper text, hairlines over shadows.
- * Dark only.
+ * Look: light and lively — off-white canvas, saturated violet, one color per expression type.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* Colors */
-  --color-bg: #0e0d0b;
-  --color-surface: #17150f;
-  --color-surface-2: #1c1a13;
-  --color-field: #1c1a13;
-  --color-border: #2b2820;
-  --color-track: #231f16;
-  --color-text: #f3efe6;
-  --color-text-muted: #948d7b;
-  --color-text-inverse: #0e0d0b;
+  --color-bg: #f7f5ff;
+  --color-surface: #ffffff;
+  --color-surface-2: #efecfb;
+  --color-field: #f1eefc;
+  --color-border: #e3def5;
+  --color-track: #e6e1f7;
+  --color-text: #1d1838;
+  --color-text-muted: #6b6590;
+  --color-text-inverse: #ffffff;
 
-  --color-primary: #b9975b;
-  --color-primary-hover: #a8854a;
-  --color-primary-soft: rgb(185 151 91 / 0.14);
+  --color-primary: #6a4cff;
+  --color-primary-hover: #5636e8;
+  --color-primary-soft: rgb(106 76 255 / 0.12);
 
-  --color-accent: #6e8ca0;
-  --color-accent-soft: rgb(110 140 160 / 0.14);
+  --color-accent: #ff6b9a;
+  --color-accent-soft: rgb(255 107 154 / 0.14);
 
   /* Decisions */
-  --color-known: #6e8ca0;
-  --color-known-soft: rgb(110 140 160 / 0.14);
-  --color-learning: #b9975b;
-  --color-learning-soft: rgb(185 151 91 / 0.14);
+  --color-known: #12b886;
+  --color-known-soft: rgb(18 184 134 / 0.14);
+  --color-learning: #ff9f1c;
+  --color-learning-soft: rgb(255 159 28 / 0.16);
+  --color-success: #12b886;
+  --color-success-soft: rgb(18 184 134 / 0.14);
 
-  --color-danger: #b5534c;
-  --color-danger-soft: rgb(181 83 76 / 0.16);
-  --color-overlay: rgb(8 7 5 / 0.65);
+  --color-danger: #f04a5f;
+  --color-danger-soft: rgb(240 74 95 / 0.12);
+  --color-glass: rgb(255 255 255 / 0.22);
+  --color-overlay: rgb(29 24 56 / 0.45);
 
-  /* Shadow: reserved for the one floating surface (the modal). Everything else uses hairlines. */
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.24);
+  /* One color per expression type */
+  --color-type-phrasal: #6a4cff;
+  --color-type-phrasal-soft: rgb(106 76 255 / 0.12);
+  --color-type-idiom: #ff6b9a;
+  --color-type-idiom-soft: rgb(255 107 154 / 0.14);
+  --color-type-collocation: #0ea5c6;
+  --color-type-collocation-soft: rgb(14 165 198 / 0.14);
+  --color-type-expression: #ff9f1c;
+  --color-type-expression-soft: rgb(255 159 28 / 0.16);
+
+  /* Elevation */
+  --shadow-sm:
+    0 1px 2px rgb(60 40 160 / 0.08), 0 4px 12px rgb(60 40 160 / 0.08);
+  --shadow-md:
+    0 2px 4px rgb(60 40 160 / 0.08), 0 12px 28px rgb(60 40 160 / 0.14);
+  --shadow-lg: 0 4px 8px rgb(60 40 160 / 0.1), 0 24px 48px rgb(60 40 160 / 0.2);
+  --shadow-glow: 0 8px 24px rgb(106 76 255 / 0.35);
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -73,15 +90,16 @@
   --weight-bold: 700;
 
   /* Borders */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
   --radius-full: 999px;
   --line-soft: 1px solid var(--color-border);
 
-  /* Motion: only opacity, short moves and strokes. Nothing bounces. */
+  /* Motion: short moves, with a little bounce for feedback. */
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 200ms;
   --duration: 320ms;
   --duration-slow: 640ms;

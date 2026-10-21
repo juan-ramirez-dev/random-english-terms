@@ -53,7 +53,6 @@ export default function AddPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.drag} data-tauri-drag-region />
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>{t.add.title}</h1>

@@ -25,7 +25,6 @@ export default function SettingsPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.drag} data-tauri-drag-region />
       <header className={styles.header}>
         <h1 className={styles.title}>{t.settings.title}</h1>
         <p className={styles.subtitle}>{t.settings.subtitle}</p>
