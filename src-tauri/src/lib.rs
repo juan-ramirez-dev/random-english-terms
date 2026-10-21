@@ -60,6 +60,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             models::models_status,
             models::model_download,
+            models::model_import,
             models::model_delete,
             ai::ai_save_key,
             ai::ai_delete_key,

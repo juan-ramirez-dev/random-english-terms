@@ -7,6 +7,7 @@ import {
   addLocalProvider,
   addOnlineProvider,
   downloadModel,
+  importModel,
   type LocalModel,
 } from '@/lib/api-client/ai'
 import {
@@ -230,14 +231,20 @@ function ModelPicker({
   const [error, setError] = useState<string | null>(null)
   const [busy, startBusy] = useTransition()
   const model = models.find(m => m.id === selected)
+  // Already on disk here, or in another app's folder we can link to.
+  const canReuse = Boolean(model && !model.installed && model.importable)
 
   const run = () =>
     startBusy(async () => {
       setError(null)
       try {
-        if (!model?.installed) {
-          setProgress(0)
-          await downloadModel(selected, setProgress)
+        if (model && !model.installed) {
+          if (model.importable) {
+            await importModel(selected)
+          } else {
+            setProgress(0)
+            await downloadModel(selected, setProgress)
+          }
         }
         await onDone(selected)
       } catch (err) {
@@ -262,7 +269,9 @@ function ModelPicker({
             <small>
               {m.installed
                 ? copy.downloaded
-                : formatSize(m.size, prefs.language)}
+                : m.importable
+                  ? copy.available
+                  : formatSize(m.size, prefs.language)}
               {m.recommended && ` · ${t.common.recommended}`}
             </small>
           </button>
@@ -290,10 +299,14 @@ function ModelPicker({
         {busy
           ? progress !== null
             ? copy.downloading
-            : t.common.saving
+            : canReuse
+              ? copy.importing
+              : t.common.saving
           : model?.installed
             ? copy.useThis
-            : copy.downloadAndUse}
+            : canReuse
+              ? copy.reuse
+              : copy.downloadAndUse}
       </Button>
       {installed && model && model.id !== installed.id && (
         <p className={styles.fieldHint}>{copy.replaces(installed.name)}</p>
