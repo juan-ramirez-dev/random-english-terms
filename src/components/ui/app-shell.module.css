@@ -1,61 +1,11 @@
 .shell {
-  display: grid;
-  grid-template-columns: 236px minmax(0, 1fr);
-  min-height: 100dvh;
-}
-
-.side {
-  position: sticky;
-  top: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
   height: 100dvh;
-  padding: var(--space-4) var(--space-5) var(--space-6);
-  background: var(--color-surface);
-  border-right: var(--line-soft);
-}
-
-/* Clears the traffic lights and gives a draggable strip. */
-.drag {
-  height: 28px;
-  flex: none;
-}
-
-.brand {
-  padding: 0 var(--space-2);
-}
-
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.link {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--color-text-muted);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  transition: color var(--duration-fast) var(--ease);
-}
-
-.link:hover {
-  color: var(--color-text);
-}
-
-.link[aria-current='page'] {
-  color: var(--color-text);
-  border-left-color: var(--color-primary);
 }
 
 .content {
+  flex: 1;
   min-width: 0;
-  height: 100dvh;
   overflow-y: auto;
 }

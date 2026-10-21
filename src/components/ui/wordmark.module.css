@@ -2,7 +2,11 @@
   display: inline-block;
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
-  color: var(--color-text);
+  color: var(--color-primary);
+}
+
+.dot {
+  color: var(--color-accent);
 }

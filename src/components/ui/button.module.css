@@ -9,12 +9,13 @@
   font-weight: var(--weight-semibold);
   white-space: nowrap;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition:
     background var(--duration-fast) var(--ease),
     color var(--duration-fast) var(--ease),
-    transform var(--duration-fast) var(--ease);
+    transform var(--duration-fast) var(--ease-bounce),
+    box-shadow var(--duration-fast) var(--ease);
 }
 
 .button:active:not(:disabled) {
@@ -24,10 +25,12 @@
 .primary {
   color: var(--color-text-inverse);
   background: var(--color-primary);
+  box-shadow: var(--shadow-glow);
 }
 
 .primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
+  transform: translateY(-1px);
 }
 
 .soft {
@@ -55,7 +58,7 @@
 }
 
 .danger:hover:not(:disabled) {
-  color: var(--color-text);
+  color: var(--color-text-inverse);
   background: var(--color-danger);
 }
 

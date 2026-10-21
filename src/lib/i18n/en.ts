@@ -19,23 +19,106 @@ export const en = {
   },
 
   nav: {
-    library: 'Library',
-    study: 'Study',
-    words: 'Words',
+    home: 'Today',
+    practice: 'Practice',
+    material: 'Material',
+    progress: 'Progress',
     settings: 'Settings',
   },
 
-  library: {
-    title: 'Library',
-    subtitle: 'Your readings and transcripts.',
+  expressions: {
+    types: {
+      'phrasal-verb': 'Phrasal verb',
+      idiom: 'Idiom',
+      collocation: 'Collocation',
+      expression: 'Expression',
+    },
+    mastery: {
+      new: 'New',
+      learning: 'Learning',
+      mastered: 'Mastered',
+    },
+    count: (n: number) => (n === 1 ? '1 expression' : `${n} expressions`),
+  },
+
+  noAi: {
+    title: 'Set up an AI first',
+    text: 'Lexio needs an AI to find expressions and build your exercises.',
+    cta: 'Go to Settings',
+  },
+
+  home: {
+    greeting: 'Ready to level up?',
+    streak: (n: number) => (n === 1 ? '1 day streak' : `${n} day streak`),
+    toLearn: (n: number) =>
+      n === 1 ? '1 expression to learn' : `${n} expressions to learn`,
+    allDone: 'You are all caught up.',
+    cta: 'Practice now',
+    recent: 'Recent material',
+    seeAll: 'See all',
+    recentEmpty: 'Add a text to find expressions in it.',
+    addText: 'Add text',
+    progress: 'Your progress',
+  },
+
+  material: {
+    title: 'Material',
+    subtitle: 'Your texts and the expressions inside them.',
     empty: 'No texts yet.',
     emptyHint: 'Paste a reading or a meeting transcript to start.',
     addText: 'Add text',
-    terms: (n: number) => (n === 1 ? '1 term' : `${n} terms`),
-    toReview: (n: number) => `${n} to review`,
-    allReviewed: 'All reviewed',
-    review: 'Review',
     open: (title: string) => `Open ${title}`,
+    all: 'All material',
+    analyzing: 'Looking for expressions…',
+    analyzingHint: 'The AI is reading your text.',
+    retry: 'Try again',
+    found: (n: number) =>
+      n === 1 ? '1 expression found' : `${n} expressions found`,
+    practice: 'Practice these',
+    scenario: 'Demo scenario',
+    scenarios: {
+      ok: 'Works',
+      analyzing: 'Slow',
+      error: 'Error',
+      empty: 'No expressions',
+    },
+  },
+
+  practice: {
+    title: 'Practice',
+    building: 'Building your session…',
+    nothing: 'Nothing to practice yet.',
+    nothingHint: 'Add a text and Lexio will find expressions for you.',
+    goMaterial: 'Go to Material',
+    retry: 'Try again',
+    step: (i: number, total: number) => `${i} of ${total}`,
+    kinds: {
+      'multiple-choice': 'What does it mean?',
+      'fill-gap': 'Fill the gap',
+      context: 'Which one fits?',
+      match: 'Match the pairs',
+    },
+    typeHere: 'Type the expression',
+    check: 'Check',
+    next: 'Next',
+    finish: 'Finish',
+    correct: 'Correct!',
+    wrong: 'Not quite',
+    answerWas: (answer: string) => `Answer: ${answer}`,
+    pickMeaning: 'Pick a phrase, then its meaning.',
+    quit: 'Quit',
+    doneTitle: 'Session complete',
+    score: (correct: number, total: number) => `${correct} of ${total} correct`,
+    streak: (n: number) => (n === 1 ? '1 day streak' : `${n} day streak`),
+    again: 'Practice again',
+    backHome: 'Back to Today',
+  },
+
+  progress: {
+    title: 'Progress',
+    subtitle: 'Every expression, by how well you know it.',
+    empty: 'No expressions yet.',
+    emptyHint: 'They show up here as you add texts.',
   },
 
   add: {
@@ -48,35 +131,6 @@ export const en = {
     import: 'Import .txt',
     save: 'Save and extract',
     saving: 'Extracting…',
-  },
-
-  study: {
-    title: 'Study',
-    pickFirst: 'Pick a text from the library first.',
-    goToLibrary: 'Go to the library',
-    progress: (i: number, total: number) => `${i} of ${total}`,
-    known: 'I know this',
-    learn: 'Want to learn',
-    skip: 'Skip',
-    hintKnow: '← Know',
-    hintLearn: 'Learn →',
-    hintSkip: '↑ / Space to skip',
-    noTerms: 'No terms to review in this text.',
-    doneTitle: 'Done for now',
-    doneSummary: (known: number, learning: number) =>
-      `${known} known · ${learning} to learn`,
-    reviewAgain: 'Review again',
-    backToLibrary: 'Back to the library',
-  },
-
-  words: {
-    title: 'Words',
-    subtitle: 'Across all your texts.',
-    learning: 'Learning',
-    known: 'Known',
-    learningEmpty: 'Nothing to learn yet. Mark words with → while you study.',
-    knownEmpty: 'No known words yet. Mark words with ← while you study.',
-    from: (title: string) => `from ${title}`,
   },
 
   settings: {
@@ -149,6 +203,7 @@ export const en = {
     titleRequired: 'Give the text a title',
     textRequired: 'Paste some text first',
     noWords: "Couldn't find any words in that text",
+    noExpressions: "Couldn't find any expressions in that text",
     textNotFound: 'Text not found',
     termNotFound: 'Term not found',
     fileReadFailed: "Couldn't read that file",

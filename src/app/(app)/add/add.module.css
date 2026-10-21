@@ -1,11 +1,7 @@
 .page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 0 var(--space-10) var(--space-16);
-}
-
-.drag {
-  height: 28px;
+  padding: var(--space-8) var(--space-10) var(--space-16);
 }
 
 .header {

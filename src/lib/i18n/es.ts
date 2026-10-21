@@ -19,24 +19,108 @@ export const es: Messages = {
   },
 
   nav: {
-    library: 'Biblioteca',
-    study: 'Estudiar',
-    words: 'Palabras',
+    home: 'Hoy',
+    practice: 'Practicar',
+    material: 'Material',
+    progress: 'Progreso',
     settings: 'Ajustes',
   },
 
-  library: {
-    title: 'Biblioteca',
-    subtitle: 'Tus lecturas y transcripciones.',
+  expressions: {
+    types: {
+      'phrasal-verb': 'Phrasal verb',
+      idiom: 'Modismo',
+      collocation: 'Colocación',
+      expression: 'Expresión',
+    },
+    mastery: {
+      new: 'Nueva',
+      learning: 'Aprendiendo',
+      mastered: 'Dominada',
+    },
+    count: (n: number) => (n === 1 ? '1 expresión' : `${n} expresiones`),
+  },
+
+  noAi: {
+    title: 'Primero configura una IA',
+    text: 'Lexio necesita una IA para encontrar expresiones y crear tus ejercicios.',
+    cta: 'Ir a Ajustes',
+  },
+
+  home: {
+    greeting: '¿Listo para subir de nivel?',
+    streak: (n: number) => (n === 1 ? 'Racha de 1 día' : `Racha de ${n} días`),
+    toLearn: (n: number) =>
+      n === 1 ? '1 expresión por aprender' : `${n} expresiones por aprender`,
+    allDone: 'Estás al día.',
+    cta: 'Practicar ahora',
+    recent: 'Material reciente',
+    seeAll: 'Ver todo',
+    recentEmpty: 'Añade un texto para encontrar expresiones en él.',
+    addText: 'Añadir texto',
+    progress: 'Tu progreso',
+  },
+
+  material: {
+    title: 'Material',
+    subtitle: 'Tus textos y las expresiones que contienen.',
     empty: 'Aún no hay textos.',
     emptyHint:
       'Pega una lectura o la transcripción de una reunión para empezar.',
     addText: 'Añadir texto',
-    terms: (n: number) => (n === 1 ? '1 término' : `${n} términos`),
-    toReview: (n: number) => `${n} por revisar`,
-    allReviewed: 'Todo revisado',
-    review: 'Revisar',
     open: (title: string) => `Abrir ${title}`,
+    all: 'Todo el material',
+    analyzing: 'Buscando expresiones…',
+    analyzingHint: 'La IA está leyendo tu texto.',
+    retry: 'Intentar de nuevo',
+    found: (n: number) =>
+      n === 1 ? '1 expresión encontrada' : `${n} expresiones encontradas`,
+    practice: 'Practicar estas',
+    scenario: 'Escenario de prueba',
+    scenarios: {
+      ok: 'Funciona',
+      analyzing: 'Lento',
+      error: 'Error',
+      empty: 'Sin expresiones',
+    },
+  },
+
+  practice: {
+    title: 'Practicar',
+    building: 'Preparando tu sesión…',
+    nothing: 'Aún no hay nada que practicar.',
+    nothingHint: 'Añade un texto y Lexio encontrará expresiones para ti.',
+    goMaterial: 'Ir a Material',
+    retry: 'Intentar de nuevo',
+    step: (i: number, total: number) => `${i} de ${total}`,
+    kinds: {
+      'multiple-choice': '¿Qué significa?',
+      'fill-gap': 'Completa el hueco',
+      context: '¿Cuál encaja?',
+      match: 'Empareja',
+    },
+    typeHere: 'Escribe la expresión',
+    check: 'Comprobar',
+    next: 'Siguiente',
+    finish: 'Terminar',
+    correct: '¡Correcto!',
+    wrong: 'No del todo',
+    answerWas: (answer: string) => `Respuesta: ${answer}`,
+    pickMeaning: 'Elige una frase y luego su significado.',
+    quit: 'Salir',
+    doneTitle: 'Sesión completa',
+    score: (correct: number, total: number) =>
+      `${correct} de ${total} correctas`,
+    streak: (n: number) => (n === 1 ? 'Racha de 1 día' : `Racha de ${n} días`),
+    again: 'Practicar de nuevo',
+    backHome: 'Volver a Hoy',
+  },
+
+  progress: {
+    title: 'Progreso',
+    subtitle: 'Cada expresión, según cuánto la dominas.',
+    empty: 'Aún no hay expresiones.',
+    emptyHint: 'Aparecerán aquí al añadir textos.',
   },
 
   add: {
@@ -49,37 +133,6 @@ export const es: Messages = {
     import: 'Importar .txt',
     save: 'Guardar y extraer',
     saving: 'Extrayendo…',
-  },
-
-  study: {
-    title: 'Estudiar',
-    pickFirst: 'Primero elige un texto en la biblioteca.',
-    goToLibrary: 'Ir a la biblioteca',
-    progress: (i: number, total: number) => `${i} de ${total}`,
-    known: 'Ya la conozco',
-    learn: 'Quiero aprenderla',
-    skip: 'Saltar',
-    hintKnow: '← Conozco',
-    hintLearn: 'Aprender →',
-    hintSkip: '↑ / Espacio para saltar',
-    noTerms: 'No hay términos para revisar en este texto.',
-    doneTitle: 'Listo por ahora',
-    doneSummary: (known: number, learning: number) =>
-      `${known} conocidas · ${learning} por aprender`,
-    reviewAgain: 'Revisar de nuevo',
-    backToLibrary: 'Volver a la biblioteca',
-  },
-
-  words: {
-    title: 'Palabras',
-    subtitle: 'De todos tus textos.',
-    learning: 'Aprendiendo',
-    known: 'Conocidas',
-    learningEmpty:
-      'Nada por aprender aún. Marca palabras con → mientras estudias.',
-    knownEmpty:
-      'Aún no hay palabras conocidas. Márcalas con ← mientras estudias.',
-    from: (title: string) => `de ${title}`,
   },
 
   settings: {
@@ -153,6 +206,7 @@ export const es: Messages = {
     titleRequired: 'Ponle un título al texto',
     textRequired: 'Pega algún texto primero',
     noWords: 'No se encontraron palabras en ese texto',
+    noExpressions: 'No se encontraron expresiones en ese texto',
     textNotFound: 'Texto no encontrado',
     termNotFound: 'Término no encontrado',
     fileReadFailed: 'No se pudo leer ese archivo',
