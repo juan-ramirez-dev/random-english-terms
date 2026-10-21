@@ -11,9 +11,19 @@ export interface Expression {
   phrase: string
   type: ExpressionType
   meaning: string
-  // Contains `phrase` verbatim, so it can be blanked out for gap exercises.
   example: string
   mastery: Mastery
+}
+
+// ← = known, → = learn.
+export type Decision = 'known' | 'learn'
+
+// A phrase swiped to the right that has no meaning or exercises yet.
+export interface PendingPhrase {
+  phrase: string
+  type: ExpressionType
+  sentence: string
+  textId: string
 }
 
 interface BaseExercise {
@@ -61,9 +71,15 @@ export type Exercise =
 
 export type ExerciseKind = Exercise['kind']
 
+// What the AI writes and SQLite keeps. `match` is built locally from saved meanings.
+export type StoredKind = Exclude<ExerciseKind, 'match'>
+
+export interface StoredExercise {
+  kind: StoredKind
+  sentence: string
+  options: string[]
+  answer: string
+}
+
 // A string for single-answer kinds; phrase → chosen meaning for match.
 export type Answer = string | Record<string, string>
-
-export interface PracticeSession {
-  exercises: Exercise[]
-}

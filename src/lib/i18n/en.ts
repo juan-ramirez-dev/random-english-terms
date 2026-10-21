@@ -41,12 +41,6 @@ export const en = {
     count: (n: number) => (n === 1 ? '1 expression' : `${n} expressions`),
   },
 
-  noAi: {
-    title: 'Set up an AI first',
-    text: 'Lexio needs an AI to find expressions and build your exercises.',
-    cta: 'Go to Settings',
-  },
-
   home: {
     greeting: 'Ready to level up?',
     streak: (n: number) => (n === 1 ? '1 day streak' : `${n} day streak`),
@@ -69,20 +63,52 @@ export const en = {
     addText: 'Add text',
     open: (title: string) => `Open ${title}`,
     all: 'All material',
-    analyzing: 'Looking for expressions…',
-    analyzingHint: 'The AI is reading your text.',
+    loading: 'Looking for expressions…',
     retry: 'Try again',
-    found: (n: number) =>
-      n === 1 ? '1 expression found' : `${n} expressions found`,
+    learning: (n: number) =>
+      n === 1 ? '1 expression to practice' : `${n} expressions to practice`,
     practice: 'Practice these',
+  },
+
+  swipe: {
+    step: (i: number, total: number) => `${i} of ${total}`,
+    known: 'I know it',
+    learn: 'Learn it',
+    skip: 'Skip',
+    keys: '← know · → learn · ↑ skip',
+    learnNow: (n: number) =>
+      n === 1 ? 'Learn the 1 I picked' : `Learn the ${n} I picked`,
+    keepSwiping: (n: number) =>
+      n === 1 ? 'Keep swiping (1 left)' : `Keep swiping (${n} left)`,
+    done: 'You went through every expression in this text.',
+    nothingNew: 'No new expressions in this text.',
+  },
+
+  learn: {
+    title: (n: number) =>
+      n === 1 ? '1 expression to learn' : `${n} expressions to learn`,
+    hint: 'Get the meaning, an example and exercises for each one.',
+    withAi: 'Generate with my AI',
+    generating: 'Writing your exercises…',
+    orClaude: 'Or use Claude',
+    claudeHint:
+      'Copy the prompt, paste it in Claude, then paste its answer here.',
+    firstOnly: (n: number) => `The prompt holds the first ${n}.`,
+    copy: 'Copy prompt',
+    copied: 'Copied',
+    pastePlaceholder: 'Paste Claude’s answer here…',
+    save: 'Save',
+    saved: (n: number) =>
+      n === 1
+        ? '1 expression ready to practice.'
+        : `${n} expressions ready to practice.`,
   },
 
   practice: {
     title: 'Practice',
     building: 'Building your session…',
-    preparing: 'Writing your exercise…',
     nothing: 'Nothing to practice yet.',
-    nothingHint: 'Add a text and Lexio will find expressions for you.',
+    nothingHint: 'Open a text in Material and pick what you want to learn.',
     goMaterial: 'Go to Material',
     retry: 'Try again',
     step: (i: number, total: number) => `${i} of ${total}`,
@@ -198,11 +224,12 @@ export const en = {
     titleRequired: 'Give the text a title',
     textRequired: 'Paste some text first',
     textTooLong: 'That text is too long. The limit is {max} characters.',
-    noWords: "Couldn't find any words in that text",
     noExpressions: "Couldn't find any expressions in that text",
+    badJson: "That doesn't look like JSON. Copy Claude's whole answer.",
+    nothingValid: 'None of those expressions were usable. Try again.',
+    copyFailed: "Couldn't copy the prompt",
     noAi: 'Set up an AI first',
     textNotFound: 'Text not found',
-    termNotFound: 'Term not found',
     fileReadFailed: "Couldn't read that file",
     offline: "Couldn't reach {provider}. Check your connection.",
     badResponse: '{provider} sent back something unexpected.',
