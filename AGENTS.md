@@ -154,6 +154,12 @@ Run: `pnpm test`.
 - Protected branches: `main`, `staging`, `feedback`. **Never push directly.** Branch + PR.
 - **Never** skip hooks: no `--no-verify`, `-n`, `HUSKY=0`.
 - If a hook fails, fix the error. Don't work around it.
+- **Every PR bumps the version.** Same number in all of:
+  - `package.json`
+  - `src-tauri/tauri.conf.json`
+  - `src-tauri/Cargo.toml` and `src-tauri/Cargo.lock` (the `lexio` entry)
+  - `APP_VERSION` in `src/app/(app)/settings/page.tsx`
+- Feature → minor (`0.6.0` → `0.7.0`). Fix → patch.
 
 ---
 
