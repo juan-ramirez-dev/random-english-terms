@@ -14,6 +14,15 @@ pub enum Code {
     UnknownProvider,
     EmptyKey,
     KeychainFailed,
+    KeyMissing,
+    Refused,
+    // Local AI
+    LocalModelMissing,
+    LocalModelBroken,
+    LocalModelFailed,
+    LocalModelBusy,
+    TooLong,
+    InvalidModel,
     // Models on disk
     AppFolderMissing,
     UnknownModel,

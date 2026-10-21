@@ -76,18 +76,12 @@ export const es: Messages = {
     found: (n: number) =>
       n === 1 ? '1 expresión encontrada' : `${n} expresiones encontradas`,
     practice: 'Practicar estas',
-    scenario: 'Escenario de prueba',
-    scenarios: {
-      ok: 'Funciona',
-      analyzing: 'Lento',
-      error: 'Error',
-      empty: 'Sin expresiones',
-    },
   },
 
   practice: {
     title: 'Practicar',
     building: 'Preparando tu sesión…',
+    preparing: 'Escribiendo tu ejercicio…',
     nothing: 'Aún no hay nada que practicar.',
     nothingHint: 'Añade un texto y Lexio encontrará expresiones para ti.',
     goMaterial: 'Ir a Material',
@@ -206,8 +200,10 @@ export const es: Messages = {
     invalidData: 'Datos inválidos',
     titleRequired: 'Ponle un título al texto',
     textRequired: 'Pega algún texto primero',
+    textTooLong: 'Ese texto es demasiado largo. El límite es {max} caracteres.',
     noWords: 'No se encontraron palabras en ese texto',
     noExpressions: 'No se encontraron expresiones en ese texto',
+    noAi: 'Primero configura una IA',
     textNotFound: 'Texto no encontrado',
     termNotFound: 'Término no encontrado',
     fileReadFailed: 'No se pudo leer ese archivo',
@@ -220,6 +216,16 @@ export const es: Messages = {
     unknownProvider: 'Proveedor desconocido',
     emptyKey: 'Primero pega tu clave de API',
     keychainFailed: 'No se pudo acceder al llavero del sistema',
+    keyMissing: '{provider} no tiene una clave guardada. Agrégala en Ajustes.',
+    refused: 'La IA se negó a responder. Intenta de nuevo.',
+    invalidModel: 'La IA respondió algo inesperado.',
+    tooLong: 'Ese texto es demasiado largo para la IA de este computador.',
+    localModelMissing:
+      'El modelo de IA no está en este computador. Configúralo en Ajustes.',
+    localModelBroken: 'No se pudo abrir el modelo de IA. Descárgalo de nuevo.',
+    localModelFailed: 'La IA de este computador falló. Intenta de nuevo.',
+    localModelBusy:
+      'La IA de este computador está ocupada. Intenta en un momento.',
     downloadFailed: 'No se pudo descargar el modelo. Intenta de nuevo.',
     diskFull: 'No hay espacio suficiente en el disco',
     downloadCorrupt: 'La descarga se corrompió. Intenta de nuevo.',

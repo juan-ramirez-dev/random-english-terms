@@ -8,12 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Icon } from '@/components/ui/icon'
 import { loadChoice } from '@/lib/api-client/ai'
-import {
-  analyzeText,
-  getScenario,
-  setScenario,
-  type Scenario,
-} from '@/lib/api-client/exercises'
+import { analyzeText } from '@/lib/api-client/exercises'
 import { deleteText, listTexts } from '@/lib/api-client/library'
 import { usePreferences } from '@/lib/i18n/context'
 import type { Expression } from '@/lib/exercises/types'
@@ -21,8 +16,6 @@ import type { TextSummary } from '@/lib/terms/types'
 import { NoAi } from '../no-ai'
 import { useSelectedText } from '../selected-text-provider'
 import styles from './material.module.css'
-
-const SCENARIOS: Scenario[] = ['ok', 'analyzing', 'error', 'empty']
 
 interface Result {
   key: string
@@ -36,7 +29,6 @@ export default function MaterialPage() {
   const { selected, select, clear } = useSelectedText()
   const [texts, setTexts] = useState<TextSummary[] | null>(null)
   const [hasAi, setHasAi] = useState<boolean | null>(null)
-  const [scenario, setScenarioState] = useState<Scenario>(getScenario)
   const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
 
@@ -48,7 +40,7 @@ export default function MaterialPage() {
     loadChoice().then(choice => setHasAi(choice !== null))
   }, [load])
 
-  const key = selected ? `${selected.id}:${scenario}:${attempt}` : null
+  const key = selected ? `${selected.id}:${attempt}` : null
   const id = selected?.id
 
   useEffect(() => {
@@ -73,11 +65,6 @@ export default function MaterialPage() {
     load()
   }
 
-  const changeScenario = (next: Scenario) => {
-    setScenario(next)
-    setScenarioState(next)
-  }
-
   // ---- One text open
   if (selected) {
     const analyzing = hasAi && result?.key !== key
@@ -90,19 +77,6 @@ export default function MaterialPage() {
         </button>
         <header className={styles.header}>
           <h1 className={styles.title}>{selected.title}</h1>
-          <label className={styles.scenario}>
-            {t.material.scenario}
-            <select
-              value={scenario}
-              onChange={e => changeScenario(e.target.value as Scenario)}
-            >
-              {SCENARIOS.map(s => (
-                <option key={s} value={s}>
-                  {t.material.scenarios[s]}
-                </option>
-              ))}
-            </select>
-          </label>
         </header>
 
         {hasAi === false && <NoAi />}

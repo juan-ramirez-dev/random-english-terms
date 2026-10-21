@@ -30,7 +30,7 @@ export function TopBar() {
 
   // Re-read on every route change: a finished session raises it.
   useEffect(() => {
-    Promise.resolve(getStreak()).then(setStreak)
+    getStreak().then(setStreak)
   }, [pathname])
 
   return (

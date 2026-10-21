@@ -29,7 +29,7 @@ export default function HomePage() {
   useEffect(() => {
     listTexts().then(setTexts)
     listExpressions().then(setExpressions)
-    Promise.resolve(getStreak()).then(setStreak)
+    getStreak().then(setStreak)
   }, [])
 
   const toLearn = expressions?.filter(e => e.mastery !== 'mastered').length ?? 0
