@@ -1,44 +1,5 @@
-import { parseExercise, parseExpressions } from './parse'
-import type { Expression, MatchPair } from './types'
-
-const entry = (overrides: Record<string, unknown> = {}) => ({
-  phrase: 'figure out',
-  type: 'phrasal-verb',
-  meaning: 'to understand or solve something',
-  example: 'We need to figure out why it fails.',
-  ...overrides,
-})
-
-describe('parseExpressions', () => {
-  it('keeps a valid expression', () => {
-    expect(parseExpressions({ expressions: [entry()] })).toEqual([entry()])
-  })
-
-  it('drops expressions whose example lacks the phrase', () => {
-    const bad = entry({ example: 'We need to work out why it fails.' })
-    expect(parseExpressions({ expressions: [bad] })).toEqual([])
-  })
-
-  it('drops unknown types', () => {
-    const bad = entry({ type: 'slang' })
-    expect(parseExpressions({ expressions: [bad] })).toEqual([])
-  })
-
-  it('drops duplicates ignoring case and spacing', () => {
-    const copy = entry({
-      phrase: 'Figure  Out',
-      example: 'Figure  Out the cause.',
-    })
-    expect(parseExpressions({ expressions: [entry(), copy] })).toEqual([
-      entry(),
-    ])
-  })
-
-  it('returns nothing when the shape is wrong', () => {
-    expect(parseExpressions({ items: [] })).toEqual([])
-    expect(parseExpressions('text')).toEqual([])
-  })
-})
+import { parseExercise, parseLearned, readJson } from './parse'
+import type { Expression, PendingPhrase } from './types'
 
 const expression: Expression = {
   id: 'x1',
@@ -49,12 +10,6 @@ const expression: Expression = {
   mastery: 'new',
 }
 
-const others: MatchPair[] = [
-  { phrase: 'give up', meaning: 'to stop trying' },
-  { phrase: 'run out of', meaning: 'to have no more' },
-  { phrase: 'break the ice', meaning: 'to start a conversation' },
-]
-
 const exercise = (raw: Record<string, unknown>) =>
   parseExercise(
     {
@@ -62,11 +17,9 @@ const exercise = (raw: Record<string, unknown>) =>
       sentence: '',
       options: [],
       answer: '',
-      pairs: [],
       ...raw,
     },
     expression,
-    others,
     1,
   )
 
@@ -121,37 +74,54 @@ describe('parseExercise', () => {
       }),
     ).toBeNull()
   })
+})
 
-  it('rejects match pairs that are not from the pool', () => {
-    expect(
-      exercise({
-        kind: 'match',
-        pairs: [
-          { phrase: 'figure out', meaning: 'to understand' },
-          { phrase: 'give up', meaning: 'to stop trying' },
-          { phrase: 'hit the road', meaning: 'to leave' },
-        ],
-      }),
-    ).toBeNull()
+const pending: PendingPhrase[] = [
+  {
+    phrase: 'figure out',
+    type: 'phrasal-verb',
+    sentence: 'We need to figure out why it fails.',
+    textId: 't1',
+  },
+]
+
+const fillGap = {
+  kind: 'fill-gap',
+  sentence: "I can't ___ this bug.",
+  options: [],
+  answer: 'figure out',
+}
+
+const learned = (overrides: Record<string, unknown> = {}) => ({
+  phrase: 'figure out',
+  meaning: 'to understand',
+  example: 'She figured out the answer.',
+  exercises: [fillGap],
+  ...overrides,
+})
+
+const FENCE = '```'
+
+describe('parseLearned', () => {
+  it('accepts JSON inside a ```json block', () => {
+    const json = JSON.stringify({ expressions: [learned()] })
+    const pasted = `Here you go:\n${FENCE}json\n${json}\n${FENCE}`
+    const result = parseLearned(readJson(pasted), pending)
+    expect(result.map(l => l.expression.phrase)).toEqual(['figure out'])
   })
 
-  it('rejects a match that leaves out the expression', () => {
-    expect(
-      exercise({
-        kind: 'match',
-        pairs: others,
-      }),
-    ).toBeNull()
+  it('ignores phrases that were not requested', () => {
+    const extra = learned({ phrase: 'give up', exercises: [] })
+    const result = parseLearned({ expressions: [extra, learned()] }, pending)
+    expect(result.map(l => l.expression.phrase)).toEqual(['figure out'])
   })
 
-  it('accepts a match built from the pool', () => {
-    const result = exercise({
-      kind: 'match',
-      pairs: [
-        { phrase: 'figure out', meaning: 'to understand' },
-        ...others.slice(0, 2),
-      ],
-    })
-    expect(result?.kind === 'match' && result.pairs).toHaveLength(3)
+  it('drops invalid exercises', () => {
+    const broken = { ...fillGap, sentence: 'No gap here.' }
+    const result = parseLearned(
+      { expressions: [learned({ exercises: [broken, fillGap] })] },
+      pending,
+    )
+    expect(result[0].exercises).toEqual([fillGap])
   })
 })

@@ -1,0 +1,113 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.step {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 280px;
+  padding: var(--space-10);
+  text-align: center;
+  background: var(--color-surface);
+  border: var(--line-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.phrase {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.sentence {
+  max-width: 52ch;
+  margin: 0;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.controls {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 560px;
+}
+
+.choice {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 56px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+.choice:active {
+  transform: scale(0.98);
+}
+
+.known {
+  color: var(--color-known);
+  background: var(--color-known-soft);
+  border-color: var(--color-known);
+}
+
+.known:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-known);
+}
+
+.learn {
+  color: var(--color-learning);
+  background: var(--color-learning-soft);
+  border-color: var(--color-learning);
+}
+
+.learn:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-learning);
+}
+
+.skip {
+  padding: 0 var(--space-4);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.keys {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}

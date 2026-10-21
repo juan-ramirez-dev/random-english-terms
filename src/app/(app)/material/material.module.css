@@ -199,3 +199,18 @@
   color: var(--color-danger);
   background: var(--color-danger-soft);
 }
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.flow > * {
+  width: 100%;
+}
+
+.flow > button {
+  width: auto;
+}

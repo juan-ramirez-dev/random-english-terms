@@ -1,28 +1,27 @@
 import { shuffle } from '@/lib/terms/shuffle'
 import { normalizeText } from './grade'
-import type { Exercise, ExpressionType, Expression, MatchPair } from './types'
+import type {
+  Exercise,
+  Expression,
+  MatchExercise,
+  PendingPhrase,
+  StoredExercise,
+} from './types'
 
 // The AI's JSON is untrusted: nothing reaches the database or the screen without passing here.
 
-export interface ExpressionDraft {
-  phrase: string
-  type: ExpressionType
-  meaning: string
-  example: string
+type PlainExercise = Exclude<Exercise, MatchExercise>
+
+// An expression the AI explained, ready to save.
+export interface Learned {
+  expression: Expression
+  textId: string
+  exercises: StoredExercise[]
 }
 
-const TYPES: readonly ExpressionType[] = [
-  'phrasal-verb',
-  'idiom',
-  'collocation',
-  'expression',
-]
-const MAX_EXPRESSIONS = 30
 const GAP = '___'
 const MIN_OPTIONS = 2
 const MAX_OPTIONS = 6
-const MIN_PAIRS = 3
-const MAX_PAIRS = 5
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null
@@ -33,27 +32,6 @@ const texts = (v: unknown): string[] | null =>
   Array.isArray(v) && v.every(item => typeof item === 'string')
     ? v.map(item => item.trim())
     : null
-
-// Expressions the AI listed. Bad entries are dropped, not fixed.
-export function parseExpressions(raw: unknown): ExpressionDraft[] {
-  if (!isObject(raw) || !Array.isArray(raw.expressions)) return []
-  const seen = new Set<string>()
-  const drafts: ExpressionDraft[] = []
-  for (const item of raw.expressions) {
-    if (!isObject(item)) continue
-    const phrase = text(item.phrase)
-    const meaning = text(item.meaning)
-    const example = text(item.example)
-    const type = TYPES.find(t => t === item.type)
-    if (!phrase || !meaning || !example || !type) continue
-    const key = normalizeText(phrase)
-    // The example must hold the phrase: fill-gap blanks it out.
-    if (!normalizeText(example).includes(key) || seen.has(key)) continue
-    seen.add(key)
-    drafts.push({ phrase, type, meaning, example })
-  }
-  return drafts.slice(0, MAX_EXPRESSIONS)
-}
 
 // ___ (or longer runs of underscores) once, normalized to exactly ___.
 function withGap(sentence: string): string | null {
@@ -73,13 +51,11 @@ function uniqueOptions(options: string[] | null): string[] | null {
 const sameText = (a: string, b: string) => normalizeText(a) === normalizeText(b)
 
 // One exercise for `expression`. null = the AI's answer is not usable.
-// `others` is the pool the AI was given: match pairs may only come from it.
 export function parseExercise(
   raw: unknown,
   expression: Expression,
-  others: readonly MatchPair[],
   seed: number,
-): Exercise | null {
+): PlainExercise | null {
   if (!isObject(raw)) return null
   const base = { id: `${expression.id}-${String(raw.kind)}`, expression }
   const sentence = text(raw.sentence)
@@ -123,48 +99,60 @@ export function parseExercise(
         options: shuffle(options, seed),
       }
     }
-    case 'match': {
-      const pairs = parsePairs(raw.pairs, expression, others)
-      if (!pairs) return null
-      return {
-        ...base,
-        kind: 'match',
-        pairs,
-        meanings: shuffle(
-          pairs.map(p => p.meaning),
-          seed,
-        ),
-      }
-    }
     default:
       return null
   }
 }
 
-function parsePairs(
-  raw: unknown,
-  expression: Expression,
-  others: readonly MatchPair[],
-): MatchPair[] | null {
-  if (!Array.isArray(raw) || raw.length < MIN_PAIRS || raw.length > MAX_PAIRS)
+const toStored = (e: PlainExercise): StoredExercise => ({
+  kind: e.kind,
+  sentence: e.kind === 'multiple-choice' ? '' : e.sentence,
+  options: e.kind === 'fill-gap' ? [] : e.options,
+  answer: e.answer,
+})
+
+// Claude wraps its answer in ```json … ``` or adds a line before it: keep the object only.
+export function readJson(pasted: string): unknown {
+  const start = pasted.indexOf('{')
+  const end = pasted.lastIndexOf('}')
+  if (start === -1 || end < start) return null
+  try {
+    return JSON.parse(pasted.slice(start, end + 1))
+  } catch {
     return null
-  const pool: MatchPair[] = [
-    { phrase: expression.phrase, meaning: expression.meaning },
-    ...others,
-  ]
-  const pairs: MatchPair[] = []
-  for (const item of raw) {
-    if (!isObject(item)) return null
-    // Take the pool's own text, so the AI can't slip in a made-up pair.
-    const source = pool.find(
-      p =>
-        sameText(p.phrase, text(item.phrase)) &&
-        sameText(p.meaning, text(item.meaning)),
-    )
-    if (!source || pairs.some(p => p.phrase === source.phrase)) return null
-    pairs.push({ phrase: source.phrase, meaning: source.meaning })
   }
-  const hasTarget = pairs.some(p => p.phrase === expression.phrase)
-  const distinctMeanings = new Set(pairs.map(p => p.meaning)).size
-  return hasTarget && distinctMeanings === pairs.length ? pairs : null
+}
+
+// Only the phrases that were asked for, each once. One needs at least one valid exercise.
+export function parseLearned(
+  raw: unknown,
+  pending: readonly PendingPhrase[],
+): Learned[] {
+  if (!isObject(raw) || !Array.isArray(raw.expressions)) return []
+  const wanted = new Map(pending.map(p => [normalizeText(p.phrase), p]))
+  const learned: Learned[] = []
+  for (const item of raw.expressions) {
+    if (!isObject(item) || !Array.isArray(item.exercises)) continue
+    const key = normalizeText(text(item.phrase))
+    const asked = wanted.get(key)
+    const meaning = text(item.meaning)
+    const example = text(item.example)
+    if (!asked || !meaning || !example) continue
+    wanted.delete(key)
+    const expression: Expression = {
+      id: crypto.randomUUID(),
+      phrase: asked.phrase,
+      type: asked.type,
+      meaning,
+      example,
+      mastery: 'new',
+    }
+    const exercises = item.exercises
+      .map(e => parseExercise(e, expression, 1))
+      .filter(e => e !== null)
+      .map(toStored)
+    if (exercises.length === 0) continue
+    learned.push({ expression, textId: asked.textId, exercises })
+  }
+  return learned
 }

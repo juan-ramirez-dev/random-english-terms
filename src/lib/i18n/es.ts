@@ -41,12 +41,6 @@ export const es: Messages = {
     count: (n: number) => (n === 1 ? '1 expresión' : `${n} expresiones`),
   },
 
-  noAi: {
-    title: 'Primero configura una IA',
-    text: 'Lexio necesita una IA para encontrar expresiones y crear tus ejercicios.',
-    cta: 'Ir a Ajustes',
-  },
-
   home: {
     greeting: '¿Listo para subir de nivel?',
     streak: (n: number) => (n === 1 ? 'Racha de 1 día' : `Racha de ${n} días`),
@@ -70,20 +64,54 @@ export const es: Messages = {
     addText: 'Añadir texto',
     open: (title: string) => `Abrir ${title}`,
     all: 'Todo el material',
-    analyzing: 'Buscando expresiones…',
-    analyzingHint: 'La IA está leyendo tu texto.',
+    loading: 'Buscando expresiones…',
     retry: 'Intentar de nuevo',
-    found: (n: number) =>
-      n === 1 ? '1 expresión encontrada' : `${n} expresiones encontradas`,
+    learning: (n: number) =>
+      n === 1
+        ? '1 expresión para practicar'
+        : `${n} expresiones para practicar`,
     practice: 'Practicar estas',
+  },
+
+  swipe: {
+    step: (i: number, total: number) => `${i} de ${total}`,
+    known: 'Ya la sé',
+    learn: 'Aprenderla',
+    skip: 'Saltar',
+    keys: '← la sé · → aprender · ↑ saltar',
+    learnNow: (n: number) =>
+      n === 1 ? 'Aprender la 1 que elegí' : `Aprender las ${n} que elegí`,
+    keepSwiping: (n: number) =>
+      n === 1 ? 'Seguir (queda 1)' : `Seguir (quedan ${n})`,
+    done: 'Ya revisaste todas las expresiones de este texto.',
+    nothingNew: 'No hay expresiones nuevas en este texto.',
+  },
+
+  learn: {
+    title: (n: number) =>
+      n === 1 ? '1 expresión por aprender' : `${n} expresiones por aprender`,
+    hint: 'Obtén el significado, un ejemplo y ejercicios para cada una.',
+    withAi: 'Generar con mi IA',
+    generating: 'Escribiendo tus ejercicios…',
+    orClaude: 'O usa Claude',
+    claudeHint:
+      'Copia el prompt, pégalo en Claude y luego pega aquí su respuesta.',
+    firstOnly: (n: number) => `El prompt incluye las primeras ${n}.`,
+    copy: 'Copiar prompt',
+    copied: 'Copiado',
+    pastePlaceholder: 'Pega aquí la respuesta de Claude…',
+    save: 'Guardar',
+    saved: (n: number) =>
+      n === 1
+        ? '1 expresión lista para practicar.'
+        : `${n} expresiones listas para practicar.`,
   },
 
   practice: {
     title: 'Practicar',
     building: 'Preparando tu sesión…',
-    preparing: 'Escribiendo tu ejercicio…',
     nothing: 'Aún no hay nada que practicar.',
-    nothingHint: 'Añade un texto y Lexio encontrará expresiones para ti.',
+    nothingHint: 'Abre un texto en Material y elige lo que quieres aprender.',
     goMaterial: 'Ir a Material',
     retry: 'Intentar de nuevo',
     step: (i: number, total: number) => `${i} de ${total}`,
@@ -201,11 +229,12 @@ export const es: Messages = {
     titleRequired: 'Ponle un título al texto',
     textRequired: 'Pega algún texto primero',
     textTooLong: 'Ese texto es demasiado largo. El límite es {max} caracteres.',
-    noWords: 'No se encontraron palabras en ese texto',
     noExpressions: 'No se encontraron expresiones en ese texto',
+    badJson: 'Eso no parece JSON. Copia toda la respuesta de Claude.',
+    nothingValid: 'Ninguna de esas expresiones sirvió. Inténtalo de nuevo.',
+    copyFailed: 'No se pudo copiar el prompt',
     noAi: 'Primero configura una IA',
     textNotFound: 'Texto no encontrado',
-    termNotFound: 'Término no encontrado',
     fileReadFailed: 'No se pudo leer ese archivo',
     offline: 'No se pudo conectar con {provider}. Revisa tu conexión.',
     badResponse: '{provider} respondió algo inesperado.',

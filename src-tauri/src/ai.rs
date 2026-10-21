@@ -15,7 +15,7 @@ use crate::models;
 
 // Listing models shouldn't take longer. Keeps the button from hanging.
 const TIMEOUT: Duration = Duration::from_secs(60);
-// Reading a whole text and listing its expressions takes longer.
+// Writing a batch of expressions with their exercises takes longer.
 const GENERATE_TIMEOUT: Duration = Duration::from_secs(120);
 
 #[derive(Clone, Copy)]
@@ -122,4 +122,10 @@ pub async fn ai_generate(
         Online::Anthropic => anthropic::generate(&http, &key, &model, &task).await,
         Online::Gemini => gemini::generate(&http, &key, &model, &task).await,
     }
+}
+
+// The same prompt as `ai_generate`, as text the user pastes into Claude or another chat.
+#[tauri::command]
+pub fn ai_prompt(task: prompt::Task) -> String {
+    prompt::for_chat(&task)
 }

@@ -8,29 +8,54 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Icon } from '@/components/ui/icon'
 import { loadChoice } from '@/lib/api-client/ai'
-import { analyzeText } from '@/lib/api-client/exercises'
+import {
+  decide,
+  listTextExpressions,
+  pendingToLearn,
+  swipeQueue,
+} from '@/lib/api-client/exercises'
 import { deleteText, listTexts } from '@/lib/api-client/library'
+import type { Decision, Expression } from '@/lib/exercises/types'
 import { usePreferences } from '@/lib/i18n/context'
-import type { Expression } from '@/lib/exercises/types'
-import type { TextSummary } from '@/lib/terms/types'
-import { NoAi } from '../no-ai'
+import type { FoundPhrase, TextSummary } from '@/lib/terms/types'
 import { useSelectedText } from '../selected-text-provider'
+import { LearnPanel } from './learn-panel'
 import styles from './material.module.css'
+import { SwipeCard } from './swipe-card'
 
-interface Result {
+interface Loaded {
   key: string
+  queue: FoundPhrase[]
+  pending: number
   expressions: Expression[]
   failure: { error: unknown } | null
 }
+
+// Where the user is in the queue of the loaded text.
+interface Step {
+  key: string
+  index: number
+  picked: number
+  panel: boolean
+}
+
+// A new text (or a reload) starts the queue over.
+const stepFor = (step: Step | null, key: string): Step =>
+  step?.key === key ? step : { key, index: 0, picked: 0, panel: false }
+
+// A swipe that failed to save comes back next time: it must not stop the round.
+const logFailure = (error: unknown) =>
+  console.error('Could not save your choice', error)
 
 export default function MaterialPage() {
   const { t, error: errorText } = usePreferences()
   const router = useRouter()
   const { selected, select, clear } = useSelectedText()
   const [texts, setTexts] = useState<TextSummary[] | null>(null)
-  const [hasAi, setHasAi] = useState<boolean | null>(null)
+  const [hasAi, setHasAi] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const [result, setResult] = useState<Result | null>(null)
+  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [step, setStep] = useState<Step | null>(null)
 
   // setState lives in the .then callback, not synchronously in the effect.
   const load = useCallback(() => listTexts().then(setTexts), [])
@@ -44,21 +69,64 @@ export default function MaterialPage() {
   const id = selected?.id
 
   useEffect(() => {
-    if (!id || !key || !hasAi) return
+    if (!id || !key) return
     let cancelled = false
-    analyzeText(id).then(
-      expressions => {
-        if (!cancelled) setResult({ key, expressions, failure: null })
+    Promise.all([
+      swipeQueue(id),
+      pendingToLearn(),
+      listTextExpressions(id),
+    ]).then(
+      ([queue, pending, expressions]) => {
+        if (cancelled) return
+        setLoaded({
+          key,
+          queue,
+          pending: pending.length,
+          expressions,
+          failure: null,
+        })
       },
       (e: unknown) => {
-        if (!cancelled)
-          setResult({ key, expressions: [], failure: { error: e } })
+        if (cancelled) return
+        setLoaded({
+          key,
+          queue: [],
+          pending: 0,
+          expressions: [],
+          failure: { error: e },
+        })
       },
     )
     return () => {
       cancelled = true
     }
-  }, [id, key, hasAi])
+  }, [id, key])
+
+  const current = loaded?.key === key ? loaded : null
+  const stepKey = key ?? ''
+  const at = stepFor(step, stepKey)
+  const found = current?.queue[at.index]
+
+  // Reads the latest step instead of closing over it.
+  const advance = useCallback(
+    (picked: number) =>
+      setStep(s => {
+        const base = stepFor(s, stepKey)
+        return { ...base, index: base.index + 1, picked: base.picked + picked }
+      }),
+    [stepKey],
+  )
+
+  const onDecide = useCallback(
+    (decision: Decision) => {
+      if (!found || !id) return
+      decide(found, id, decision).catch(logFailure)
+      advance(decision === 'learn' ? 1 : 0)
+    },
+    [found, id, advance],
+  )
+
+  const onSkip = useCallback(() => advance(0), [advance])
 
   const remove = async (textId: string) => {
     await deleteText(textId)
@@ -67,8 +135,10 @@ export default function MaterialPage() {
 
   // ---- One text open
   if (selected) {
-    const analyzing = hasAi && result?.key !== key
-    const current = result?.key === key ? result : null
+    const total = current?.queue.length ?? 0
+    const left = total - at.index
+    const pending = (current?.pending ?? 0) + at.picked
+    const swiping = left > 0 && !at.panel
     return (
       <main className={styles.page}>
         <button type="button" className={styles.back} onClick={clear}>
@@ -79,13 +149,10 @@ export default function MaterialPage() {
           <h1 className={styles.title}>{selected.title}</h1>
         </header>
 
-        {hasAi === false && <NoAi />}
-
-        {analyzing && (
+        {!current && (
           <Card className={styles.status}>
             <span className={styles.spinner} />
-            <p className={styles.statusTitle}>{t.material.analyzing}</p>
-            <p className={styles.statusHint}>{t.material.analyzingHint}</p>
+            <p className={styles.statusTitle}>{t.material.loading}</p>
           </Card>
         )}
 
@@ -101,31 +168,82 @@ export default function MaterialPage() {
         )}
 
         {current && !current.failure && (
-          <>
-            <div className={styles.found}>
-              <p className={styles.foundCount}>
-                {t.material.found(current.expressions.length)}
-              </p>
-              <Button onClick={() => router.push('/practice/')}>
-                <Icon name="practice" size={18} />
-                {t.material.practice}
-              </Button>
-            </div>
-            <ul className={styles.expressions}>
-              {current.expressions.map(e => (
-                <li key={e.id}>
-                  <Card className={styles.expression}>
-                    <div className={styles.expressionTop}>
-                      <span className={styles.phrase}>{e.phrase}</span>
-                      <Badge type={e.type}>{t.expressions.types[e.type]}</Badge>
-                    </div>
-                    <p className={styles.meaning}>{e.meaning}</p>
-                    <p className={styles.example}>{e.example}</p>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </>
+          <div className={styles.flow}>
+            {swiping && found && (
+              <>
+                <SwipeCard
+                  key={found.phrase}
+                  found={found}
+                  step={at.index + 1}
+                  total={total}
+                  onDecide={onDecide}
+                  onSkip={onSkip}
+                />
+                {pending > 0 && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setStep({ ...at, panel: true })}
+                  >
+                    {t.swipe.learnNow(pending)}
+                  </Button>
+                )}
+              </>
+            )}
+
+            {!swiping && (
+              <>
+                {left > 0 ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setStep({ ...at, panel: false })}
+                  >
+                    {t.swipe.keepSwiping(left)}
+                  </Button>
+                ) : (
+                  <p className={styles.statusHint}>
+                    {total === 0 ? t.swipe.nothingNew : t.swipe.done}
+                  </p>
+                )}
+                {pending > 0 && (
+                  <LearnPanel
+                    pending={pending}
+                    hasAi={hasAi}
+                    onSaved={() => setAttempt(a => a + 1)}
+                  />
+                )}
+              </>
+            )}
+
+            {current.expressions.length > 0 && (
+              <section>
+                <div className={styles.found}>
+                  <p className={styles.foundCount}>
+                    {t.material.learning(current.expressions.length)}
+                  </p>
+                  <Button onClick={() => router.push('/practice/')}>
+                    <Icon name="practice" size={18} />
+                    {t.material.practice}
+                  </Button>
+                </div>
+                <ul className={styles.expressions}>
+                  {current.expressions.map(e => (
+                    <li key={e.id}>
+                      <Card className={styles.expression}>
+                        <div className={styles.expressionTop}>
+                          <span className={styles.phrase}>{e.phrase}</span>
+                          <Badge type={e.type}>
+                            {t.expressions.types[e.type]}
+                          </Badge>
+                        </div>
+                        <p className={styles.meaning}>{e.meaning}</p>
+                        <p className={styles.example}>{e.example}</p>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
         )}
       </main>
     )

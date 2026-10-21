@@ -38,6 +38,12 @@ pub fn run() {
             sql: include_str!("../migrations/0004_expressions.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "swipe",
+            sql: include_str!("../migrations/0005_swipe.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     // No global timeout: downloading a model takes a while. Only a connect timeout.
@@ -74,6 +80,7 @@ pub fn run() {
             ai::ai_save_key,
             ai::ai_delete_key,
             ai::ai_generate,
+            ai::ai_prompt,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

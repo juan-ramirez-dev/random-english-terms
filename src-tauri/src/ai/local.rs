@@ -14,7 +14,7 @@ use serde_json::Value;
 use super::prompt::{self, Task};
 use crate::error::{AppError, Code, Result};
 
-// Room for a 12,000-character text, the prompt and the answer.
+// Room for the prompt and the answer for a batch of phrases.
 const CONTEXT_TOKENS: u32 = 8192;
 
 struct Loaded {
@@ -22,7 +22,7 @@ struct Loaded {
     model: LlamaModel,
 }
 
-// The model stays in memory: loading it takes seconds, and every exercise is its own call.
+// The model stays in memory: loading it takes seconds, and each batch is its own call.
 #[derive(Default)]
 pub struct Engine {
     slot: Mutex<Option<Loaded>>,
@@ -58,7 +58,7 @@ fn failed() -> AppError {
     Code::LocalModelFailed.into()
 }
 
-// A random seed per call, so the same expression gets a different exercise next session.
+// A random seed per call, so a batch asked again gets new exercises.
 fn seed() -> u32 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -91,16 +91,9 @@ pub fn generate(engine: &Engine, path: PathBuf, task: &Task) -> Result<Value> {
     let grammar = llama_cpp_2::json_schema_to_grammar(&prompt::schema(task).to_string())
         .map_err(|_| failed())?;
     let grammar = LlamaSampler::grammar(model, &grammar, "root").map_err(|_| failed())?;
-    let mut sampler = match task {
-        // Extraction should be repeatable.
-        Task::Expressions { .. } => LlamaSampler::chain_simple([grammar, LlamaSampler::greedy()]),
-        // Exercises should change from one session to the next.
-        Task::Exercise { .. } => LlamaSampler::chain_simple([
-            grammar,
-            LlamaSampler::temp(0.5),
-            LlamaSampler::dist(seed()),
-        ]),
-    };
+    // Exercises should change from one text to the next.
+    let mut sampler =
+        LlamaSampler::chain_simple([grammar, LlamaSampler::temp(0.5), LlamaSampler::dist(seed())]);
 
     let max_output = task.max_output_tokens();
     let params = LlamaContextParams::default()
