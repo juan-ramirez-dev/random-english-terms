@@ -6,6 +6,7 @@ use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncWriteExt;
 
+use crate::ai::local::Engine;
 use crate::error::{Code, Result};
 
 pub struct ModelInfo {
@@ -70,6 +71,16 @@ fn dir(app: &AppHandle) -> Result<PathBuf> {
 
 fn find(id: &str) -> Result<&'static ModelInfo> {
     CATALOG.iter().find(|m| m.id == id).ok_or(Code::UnknownModel.into())
+}
+
+// Where the model file is, or an error if it isn't on disk.
+pub fn installed_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
+    let path = dir(app)?.join(find(id)?.file);
+    if path.exists() {
+        Ok(path)
+    } else {
+        Err(Code::LocalModelMissing.into())
+    }
 }
 
 // Other apps' model folders next to ours (same Application Support parent).
@@ -139,7 +150,8 @@ pub async fn model_download(
     }
     result?;
 
-    // Only one model on disk at a time.
+    // Only one model on disk at a time. The engine must let go of the old one first.
+    app.state::<Engine>().unload()?;
     for other in CATALOG.iter().filter(|m| m.id != model.id) {
         let _ = tokio::fs::remove_file(dir.join(other.file)).await;
     }
@@ -240,6 +252,7 @@ pub async fn model_import(app: AppHandle, id: String) -> Result<()> {
     let dir = dir(&app)?;
     std::fs::create_dir_all(&dir).map_err(|_| Code::ModelSaveFailed)?;
     let dest = dir.join(model.file);
+    app.state::<Engine>().unload()?;
     let _ = std::fs::remove_file(&dest);
 
     // Only one model on disk at a time.
@@ -258,6 +271,8 @@ pub async fn model_import(app: AppHandle, id: String) -> Result<()> {
 pub fn model_delete(app: AppHandle, id: String) -> Result<()> {
     let model = find(&id)?;
     let path = dir(&app)?.join(model.file);
+    // A loaded model keeps the file open: let go of it first.
+    app.state::<Engine>().unload()?;
     if path.exists() {
         std::fs::remove_file(path).map_err(|_| Code::ModelDeleteFailed)?;
     }

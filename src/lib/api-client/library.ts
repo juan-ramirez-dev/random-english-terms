@@ -22,6 +22,8 @@ import type {
 import { ApiClientError } from './http'
 
 const TITLE_MAX = 120
+// Fits the local model's context with room for the prompt and the answer.
+export const TEXT_MAX = 12_000
 
 // Create a text and the review terms pulled from it. v1: single words.
 export async function addText(input: {
@@ -32,6 +34,9 @@ export async function addText(input: {
   const content = input.content.trim()
   if (!title) throw new ApiClientError(422, 'titleRequired')
   if (!content) throw new ApiClientError(422, 'textRequired')
+  if (content.length > TEXT_MAX) {
+    throw new ApiClientError(422, 'textTooLong', { max: TEXT_MAX })
+  }
 
   const candidates = extractTerms(content)
   if (candidates.length === 0) throw new ApiClientError(422, 'noWords')

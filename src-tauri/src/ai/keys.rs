@@ -16,6 +16,12 @@ pub fn save(provider: Online, key: &str) -> Result<()> {
         .map_err(|_| Code::KeychainFailed)?)
 }
 
+pub fn read(provider: Online) -> Result<String> {
+    entry(provider)?
+        .get_password()
+        .map_err(|_| provider.error(Code::KeyMissing))
+}
+
 pub fn delete(provider: Online) -> Result<()> {
     match entry(provider)?.delete_credential() {
         Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),

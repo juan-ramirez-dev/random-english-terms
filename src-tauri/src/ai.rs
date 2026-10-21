@@ -1,16 +1,22 @@
 mod anthropic;
 mod gemini;
 mod keys;
+pub mod local;
 mod openai;
+mod prompt;
 
 use std::time::Duration;
 
 use serde_json::Value;
+use tauri::{AppHandle, Manager};
 
 use crate::error::{AppError, Code, Result};
+use crate::models;
 
 // Listing models shouldn't take longer. Keeps the button from hanging.
 const TIMEOUT: Duration = Duration::from_secs(60);
+// Reading a whole text and listing its expressions takes longer.
+const GENERATE_TIMEOUT: Duration = Duration::from_secs(120);
 
 #[derive(Clone, Copy)]
 pub enum Online {
@@ -88,4 +94,32 @@ pub async fn ai_save_key(
 #[tauri::command]
 pub fn ai_delete_key(provider: String) -> Result<()> {
     keys::delete(Online::parse(&provider)?)
+}
+
+// One call per task. Returns the AI's raw JSON: the front validates it.
+#[tauri::command]
+pub async fn ai_generate(
+    app: AppHandle,
+    http: tauri::State<'_, reqwest::Client>,
+    provider: String,
+    model: String,
+    task: prompt::Task,
+) -> Result<Value> {
+    if provider == "local" {
+        let path = models::installed_path(&app, &model)?;
+        // The model runs for seconds: keep it off the async runtime.
+        return tauri::async_runtime::spawn_blocking(move || {
+            local::generate(&app.state::<local::Engine>(), path, &task)
+        })
+        .await
+        .map_err(|_| Code::LocalModelFailed)?;
+    }
+
+    let provider = Online::parse(&provider)?;
+    let key = keys::read(provider)?;
+    match provider {
+        Online::OpenAi => openai::generate(&http, &key, &model, &task).await,
+        Online::Anthropic => anthropic::generate(&http, &key, &model, &task).await,
+        Online::Gemini => gemini::generate(&http, &key, &model, &task).await,
+    }
 }

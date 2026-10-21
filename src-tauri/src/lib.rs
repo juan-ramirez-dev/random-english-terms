@@ -4,6 +4,8 @@ mod models;
 
 use std::time::Duration;
 
+use tauri::Manager;
+
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 // Same URL as src/lib/local-db/db.ts. Migrations run when it opens.
@@ -28,6 +30,12 @@ pub fn run() {
             version: 3,
             description: "ai_choice",
             sql: include_str!("../migrations/0003_ai_choice.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "expressions",
+            sql: include_str!("../migrations/0004_expressions.sql"),
             kind: MigrationKind::Up,
         },
     ];
@@ -57,6 +65,7 @@ pub fn run() {
                 .build(),
         )
         .manage(http)
+        .manage(ai::local::Engine::default())
         .invoke_handler(tauri::generate_handler![
             models::models_status,
             models::model_download,
@@ -64,7 +73,13 @@ pub fn run() {
             models::model_delete,
             ai::ai_save_key,
             ai::ai_delete_key,
+            ai::ai_generate,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                app.state::<ai::local::Engine>().unload_on_exit();
+            }
+        });
 }

@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { AiChoice, OnlineProviderId } from '@/lib/ai/catalog'
+import type { ExpressionType, MatchPair } from '@/lib/exercises/types'
 import {
   clearAiChoice,
   getAiChoice,
@@ -42,6 +43,28 @@ async function call<T>(command: string, args?: Record<string, unknown>) {
 }
 
 export const loadChoice = getAiChoice
+
+// What the AI is asked for. Mirrors `Task` in src-tauri/src/ai/prompt.rs.
+export type AiTask =
+  | { kind: 'expressions'; text: string }
+  | {
+      kind: 'exercise'
+      expression: {
+        phrase: string
+        type: ExpressionType
+        meaning: string
+        example: string
+      }
+      others: MatchPair[]
+    }
+
+// The AI's raw JSON. Nothing here checks its shape: see exercises/parse.ts.
+export const generate = (choice: AiChoice, task: AiTask) =>
+  call<unknown>('ai_generate', {
+    provider: choice.provider,
+    model: choice.model,
+    task,
+  })
 
 export const listModels = () => call<LocalModel[]>('models_status')
 
