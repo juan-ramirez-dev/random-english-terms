@@ -14,6 +14,8 @@ export interface LocalModel {
   size: number
   recommended: boolean
   installed: boolean
+  // Already downloaded by another app: reuse it instead of downloading.
+  importable: boolean
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
@@ -62,6 +64,9 @@ export async function downloadModel(
 }
 
 export const deleteModel = (id: string) => call('model_delete', { id })
+
+// Reuse a model another app already downloaded (no network).
+export const importModel = (id: string) => call('model_import', { id })
 
 // The key is tested and stored in the keychain before the choice is saved.
 export async function addOnlineProvider(

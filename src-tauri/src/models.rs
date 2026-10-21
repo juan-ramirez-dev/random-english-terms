@@ -48,6 +48,8 @@ pub struct ModelStatus {
     size: u64,
     recommended: bool,
     installed: bool,
+    // The same file is already in another app's folder: reuse it, no download.
+    importable: bool,
 }
 
 #[derive(Clone, Serialize)]
@@ -70,17 +72,49 @@ fn find(id: &str) -> Result<&'static ModelInfo> {
     CATALOG.iter().find(|m| m.id == id).ok_or(Code::UnknownModel.into())
 }
 
+// Other apps' model folders next to ours (same Application Support parent).
+fn siblings(app: &AppHandle) -> Vec<PathBuf> {
+    let Ok(own) = app.path().app_data_dir() else {
+        return Vec::new();
+    };
+    let Some(parent) = own.parent() else {
+        return Vec::new();
+    };
+    let Ok(entries) = std::fs::read_dir(parent) else {
+        return Vec::new();
+    };
+    entries
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| *p != own)
+        .map(|p| p.join("models"))
+        .filter(|p| p.is_dir())
+        .collect()
+}
+
+// Same filename already downloaded by another app.
+fn found_in_sibling(app: &AppHandle, file: &str) -> Option<PathBuf> {
+    siblings(app)
+        .into_iter()
+        .map(|d| d.join(file))
+        .find(|p| p.exists())
+}
+
 #[tauri::command]
 pub fn models_status(app: AppHandle) -> Result<Vec<ModelStatus>> {
     let dir = dir(&app)?;
     Ok(CATALOG
         .iter()
-        .map(|m| ModelStatus {
-            id: m.id,
-            name: m.name,
-            size: m.size,
-            recommended: m.recommended,
-            installed: dir.join(m.file).exists(),
+        .map(|m| {
+            let installed = dir.join(m.file).exists();
+            ModelStatus {
+                id: m.id,
+                name: m.name,
+                size: m.size,
+                recommended: m.recommended,
+                installed,
+                importable: !installed && found_in_sibling(&app, m.file).is_some(),
+            }
         })
         .collect())
 }
@@ -162,6 +196,60 @@ async fn fetch(
         .collect();
     if hash != model.sha256 {
         return Err(Code::DownloadCorrupt.into());
+    }
+    Ok(())
+}
+
+// Reads the whole file to confirm it's the model we expect, not something renamed.
+fn verify(path: &Path, expected: &str) -> Result<()> {
+    use std::io::Read;
+    let mut file = std::fs::File::open(path).map_err(|_| Code::ModelSaveFailed)?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 1 << 20];
+    loop {
+        let read = file.read(&mut buf).map_err(|_| Code::ModelSaveFailed)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buf[..read]);
+    }
+    let hash: String = hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    if hash != expected {
+        return Err(Code::DownloadCorrupt.into());
+    }
+    Ok(())
+}
+
+// Reuses a model another app already downloaded, with no network.
+#[tauri::command]
+pub async fn model_import(app: AppHandle, id: String) -> Result<()> {
+    let model = find(&id)?;
+    let src = found_in_sibling(&app, model.file).ok_or(Code::ModelSaveFailed)?;
+
+    // Hashing GBs blocks: keep it off the async runtime.
+    let check = src.clone();
+    let expected = model.sha256;
+    tauri::async_runtime::spawn_blocking(move || verify(&check, expected))
+        .await
+        .map_err(|_| Code::ModelSaveFailed)??;
+
+    let dir = dir(&app)?;
+    std::fs::create_dir_all(&dir).map_err(|_| Code::ModelSaveFailed)?;
+    let dest = dir.join(model.file);
+    let _ = std::fs::remove_file(&dest);
+
+    // Only one model on disk at a time.
+    for other in CATALOG.iter().filter(|m| m.id != model.id) {
+        let _ = std::fs::remove_file(dir.join(other.file));
+    }
+
+    // Hardlink shares the bytes (no extra space); copy when it can't (other disk).
+    if std::fs::hard_link(&src, &dest).is_err() {
+        std::fs::copy(&src, &dest).map_err(|_| Code::ModelSaveFailed)?;
     }
     Ok(())
 }
