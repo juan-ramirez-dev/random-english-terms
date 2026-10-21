@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Lexio",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "identifier": "dev.juanramirez.lexio",
   "build": {
     "frontendDist": "../out",

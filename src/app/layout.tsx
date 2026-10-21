@@ -1,17 +1,12 @@
 import type { Metadata } from 'next'
-import { Fraunces, Instrument_Sans } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import { en } from '@/lib/i18n/en'
 import './globals.css'
 
-// Self-hosted at build time (no runtime network): feeds --font-display/--font-sans in globals.css.
-const fraunces = Fraunces({
+// Self-hosted at build time (no runtime network): feeds --font-sans/--font-display in globals.css.
+const nunito = Nunito({
   subsets: ['latin'],
-  variable: '--font-fraunces',
-  display: 'swap',
-})
-const instrumentSans = Instrument_Sans({
-  subsets: ['latin'],
-  variable: '--font-instrument-sans',
+  variable: '--font-nunito',
   display: 'swap',
 })
 
@@ -25,10 +20,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${instrumentSans.variable}`}
-    >
+    <html lang="en" className={`${nunito.variable}`}>
       <body>{children}</body>
     </html>
   )

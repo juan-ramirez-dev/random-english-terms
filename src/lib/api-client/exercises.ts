@@ -81,6 +81,10 @@ export function recordResult(id: string, correct: boolean): void {
   mastery.set(id, correct ? NEXT_UP[current] : NEXT_DOWN[current])
 }
 
+export function markKnown(id: string): void {
+  mastery.set(id, 'mastered')
+}
+
 // Counts once per day: finishing a session keeps the streak alive.
 export function completeSession(): number {
   if (!practicedToday) {

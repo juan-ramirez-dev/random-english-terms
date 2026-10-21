@@ -101,6 +101,7 @@ export const en = {
     typeHere: 'Type the expression',
     check: 'Check',
     next: 'Next',
+    alreadyKnow: 'I already know this',
     finish: 'Finish',
     correct: 'Correct!',
     wrong: 'Not quite',
