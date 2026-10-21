@@ -102,6 +102,7 @@ export const es: Messages = {
     typeHere: 'Escribe la expresión',
     check: 'Comprobar',
     next: 'Siguiente',
+    alreadyKnow: 'Ya me la sé',
     finish: 'Terminar',
     correct: '¡Correcto!',
     wrong: 'No del todo',

@@ -69,11 +69,9 @@
 
   /* Type: self-hosted via next/font/google (see layout.tsx), system fallbacks after. */
   --font-sans:
-    var(--font-instrument-sans), -apple-system, BlinkMacSystemFont,
-    'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
-  --font-display:
-    var(--font-fraunces), ui-serif, 'New York', 'Iowan Old Style', Palatino,
-    Georgia, serif;
+    var(--font-nunito), -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-sans);
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

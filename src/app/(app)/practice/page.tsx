@@ -10,6 +10,7 @@ import { loadChoice } from '@/lib/api-client/ai'
 import {
   completeSession,
   generateSession,
+  markKnown,
   recordResult,
 } from '@/lib/api-client/exercises'
 import { usePreferences } from '@/lib/i18n/context'
@@ -78,6 +79,12 @@ export default function PracticePage() {
     if (ok) setCorrect(c => c + 1)
   }
 
+  const onKnown = (id: string) => {
+    markKnown(id)
+    setCorrect(c => c + 1)
+    onNext()
+  }
+
   const onNext = () => {
     if (index + 1 >= total) setStreak(completeSession())
     setIndex(i => i + 1)
@@ -136,6 +143,7 @@ export default function PracticePage() {
             last={index + 1 >= total}
             onAnswered={ok => onAnswered(exercise.expression.id, ok)}
             onNext={onNext}
+            onKnown={() => onKnown(exercise.expression.id)}
           />
         </>
       )}

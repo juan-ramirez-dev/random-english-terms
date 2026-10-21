@@ -14,10 +14,17 @@ interface Props {
   last: boolean
   onAnswered: (correct: boolean) => void
   onNext: () => void
+  onKnown: () => void
 }
 
 // One exercise: collect the answer, grade it, show feedback, wait for "next".
-export function ExerciseView({ exercise, last, onAnswered, onNext }: Props) {
+export function ExerciseView({
+  exercise,
+  last,
+  onAnswered,
+  onNext,
+  onKnown,
+}: Props) {
   const { t } = usePreferences()
   const [result, setResult] = useState<{ correct: boolean } | null>(null)
 
@@ -69,6 +76,12 @@ export function ExerciseView({ exercise, last, onAnswered, onNext }: Props) {
 
       {exercise.kind === 'match' && (
         <Match exercise={exercise} checked={result} onSubmit={submit} />
+      )}
+
+      {!result && (
+        <Button variant="ghost" onClick={onKnown}>
+          {t.practice.alreadyKnow}
+        </Button>
       )}
 
       {result && (
