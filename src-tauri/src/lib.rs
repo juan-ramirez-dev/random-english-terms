@@ -44,6 +44,12 @@ pub fn run() {
             sql: include_str!("../migrations/0005_swipe.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "lessons",
+            sql: include_str!("../migrations/0006_lessons.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     // No global timeout: downloading a model takes a while. Only a connect timeout.

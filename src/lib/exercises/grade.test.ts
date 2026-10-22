@@ -13,6 +13,12 @@ const expression: Expression = {
   type: 'phrasal-verb',
   meaning: 'to understand or solve something',
   example: 'We need to figure out why it fails.',
+  lesson: {
+    usage: '',
+    translation: '',
+    examples: ['We need to figure out why it fails.'],
+    dialog: [],
+  },
   mastery: 'new',
 }
 

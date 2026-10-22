@@ -6,12 +6,23 @@ export type ExpressionType =
 
 export type Mastery = 'new' | 'learning' | 'mastered'
 
+// What the person reads before the first exercise. Written by the AI.
+export interface Lesson {
+  usage: string
+  translation: string
+  examples: string[]
+  // "A: …" / "B: …" lines. Can be empty.
+  dialog: string[]
+}
+
 export interface Expression {
   id: string
   phrase: string
   type: ExpressionType
   meaning: string
+  // The lesson's first example.
   example: string
+  lesson: Lesson
   mastery: Mastery
 }
 
@@ -51,6 +62,20 @@ export interface ContextExercise extends BaseExercise {
   answer: string
 }
 
+// Options are sentences; only one uses the phrase right.
+export interface UsageExercise extends BaseExercise {
+  kind: 'usage'
+  options: string[]
+  answer: string
+}
+
+// The words of an example, shuffled, to put back in order.
+export interface OrderExercise extends BaseExercise {
+  kind: 'order'
+  words: string[]
+  answer: string
+}
+
 export interface MatchPair {
   phrase: string
   meaning: string
@@ -67,12 +92,19 @@ export type Exercise =
   | MultipleChoiceExercise
   | FillGapExercise
   | ContextExercise
+  | UsageExercise
   | MatchExercise
+  | OrderExercise
 
 export type ExerciseKind = Exercise['kind']
 
-// What the AI writes and SQLite keeps. `match` is built locally from saved meanings.
-export type StoredKind = Exclude<ExerciseKind, 'match'>
+// What the AI writes and SQLite keeps. `match` and `order` are built locally.
+export type StoredKind = Exclude<ExerciseKind, 'match' | 'order'>
+
+// A session is a list of these: a phrase's lesson, then its exercises.
+export type SessionStep =
+  | { kind: 'lesson'; id: string; expression: Expression }
+  | Exercise
 
 export interface StoredExercise {
   kind: StoredKind

@@ -9,19 +9,27 @@ import { ProgressRing } from '@/components/ui/progress-ring'
 import {
   completeSession,
   markKnown,
-  recordResult,
+  recordPhrase,
   startSession,
 } from '@/lib/api-client/exercises'
 import { usePreferences } from '@/lib/i18n/context'
-import type { Exercise } from '@/lib/exercises/types'
+import type { SessionStep } from '@/lib/exercises/types'
 import { useSelectedText } from '../selected-text-provider'
 import { ExerciseView } from './exercise-view'
+import { LessonCard } from './lesson-card'
 import styles from './practice.module.css'
 
 interface Loaded {
   key: string
-  exercises: Exercise[]
+  steps: SessionStep[]
   failure: { error: unknown } | null
+}
+
+// Where the next phrase starts, or the end of the session.
+const nextPhrase = (steps: SessionStep[], from: number) => {
+  const id = steps[from]?.expression.id
+  const at = steps.findIndex((s, i) => i > from && s.expression.id !== id)
+  return at === -1 ? steps.length : at
 }
 
 // A saved result that failed to write must not stop the lesson.
@@ -36,6 +44,8 @@ export default function PracticePage() {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
+  // Wrong answers of the phrase on screen. Saved once its last step is done.
+  const [wrong, setWrong] = useState(0)
   const [streak, setStreak] = useState<number | null>(null)
 
   const textId = selected?.id ?? null
@@ -45,11 +55,11 @@ export default function PracticePage() {
   useEffect(() => {
     let cancelled = false
     startSession(textId).then(
-      exercises => {
-        if (!cancelled) setLoaded({ key, exercises, failure: null })
+      steps => {
+        if (!cancelled) setLoaded({ key, steps, failure: null })
       },
       (e: unknown) => {
-        if (!cancelled) setLoaded({ key, exercises: [], failure: { error: e } })
+        if (!cancelled) setLoaded({ key, steps: [], failure: { error: e } })
       },
     )
     return () => {
@@ -58,33 +68,49 @@ export default function PracticePage() {
   }, [textId, key])
 
   const current = loaded?.key === key ? loaded : null
-  const exercises = current && !current.failure ? current.exercises : null
-  const total = exercises?.length ?? 0
+  const steps = current && !current.failure ? current.steps : null
+  const total = steps?.length ?? 0
+  const graded = steps?.filter(s => s.kind !== 'lesson').length ?? 0
 
   const restart = () => {
     setIndex(0)
     setCorrect(0)
+    setWrong(0)
     setStreak(null)
     setAttempt(a => a + 1)
   }
 
-  const exercise = exercises?.[index] ?? null
+  const step = steps?.[index] ?? null
   const done = total > 0 && index >= total
 
-  const onAnswered = (id: string, ok: boolean) => {
-    recordResult(id, ok).catch(logFailure)
-    if (ok) setCorrect(c => c + 1)
+  const goTo = (to: number) => {
+    if (to >= total) completeSession().then(setStreak, logFailure)
+    setIndex(to)
   }
 
-  const onKnown = (id: string) => {
-    markKnown(id).catch(logFailure)
-    setCorrect(c => c + 1)
-    onNext()
+  const onAnswered = (ok: boolean) => {
+    if (ok) setCorrect(c => c + 1)
+    else setWrong(w => w + 1)
   }
 
   const onNext = () => {
-    if (index + 1 >= total) completeSession().then(setStreak, logFailure)
-    setIndex(i => i + 1)
+    if (!steps || !step) return
+    const to = index + 1
+    if (to === nextPhrase(steps, index)) {
+      recordPhrase(step.expression.id, wrong).catch(logFailure)
+      setWrong(0)
+    }
+    goTo(to)
+  }
+
+  // Its remaining exercises count as right.
+  const onKnown = () => {
+    if (!steps || !step) return
+    const to = nextPhrase(steps, index)
+    markKnown(step.expression.id).catch(logFailure)
+    setCorrect(c => c + steps.slice(index, to).length)
+    setWrong(0)
+    goTo(to)
   }
 
   return (
@@ -105,7 +131,7 @@ export default function PracticePage() {
         </Card>
       )}
 
-      {exercises && total === 0 && (
+      {steps && total === 0 && (
         <Card className={styles.center}>
           <p className={styles.title}>{t.practice.nothing}</p>
           <p className={styles.hint}>{t.practice.nothingHint}</p>
@@ -115,7 +141,7 @@ export default function PracticePage() {
         </Card>
       )}
 
-      {exercises && total > 0 && !done && (
+      {steps && total > 0 && !done && (
         <>
           <header className={styles.header}>
             <button
@@ -133,14 +159,22 @@ export default function PracticePage() {
             />
           </header>
 
-          {exercise && (
-            <ExerciseView
-              key={exercise.id}
-              exercise={exercise}
-              last={index + 1 >= total}
-              onAnswered={ok => onAnswered(exercise.expression.id, ok)}
+          {step?.kind === 'lesson' && (
+            <LessonCard
+              key={step.id}
+              expression={step.expression}
               onNext={onNext}
-              onKnown={() => onKnown(exercise.expression.id)}
+            />
+          )}
+
+          {step && step.kind !== 'lesson' && (
+            <ExerciseView
+              key={step.id}
+              exercise={step}
+              last={index + 1 >= total}
+              onAnswered={onAnswered}
+              onNext={onNext}
+              onKnown={onKnown}
             />
           )}
         </>
@@ -152,7 +186,7 @@ export default function PracticePage() {
             <Icon name="star" size={36} />
           </span>
           <p className={styles.doneTitle}>{t.practice.doneTitle}</p>
-          <p className={styles.score}>{t.practice.score(correct, total)}</p>
+          <p className={styles.score}>{t.practice.score(correct, graded)}</p>
           {streak !== null && (
             <span className={styles.streak}>
               <Icon name="flame" size={18} />

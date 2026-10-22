@@ -1,4 +1,4 @@
-import { parseExercise, parseLearned, readJson } from './parse'
+import { parseExercise, parseLearned, parseLesson, readJson } from './parse'
 import type { Expression, PendingPhrase } from './types'
 
 const expression: Expression = {
@@ -7,6 +7,12 @@ const expression: Expression = {
   type: 'phrasal-verb',
   meaning: 'to understand',
   example: 'We need to figure out why it fails.',
+  lesson: {
+    usage: 'Casual, when you find the answer.',
+    translation: 'descifrar',
+    examples: ['We need to figure out why it fails.', 'I figured it out.'],
+    dialog: [],
+  },
   mastery: 'new',
 }
 
@@ -65,6 +71,16 @@ describe('parseExercise', () => {
     ).toBeNull()
   })
 
+  it('rejects a usage exercise whose answer is not one of the options', () => {
+    expect(
+      exercise({
+        kind: 'usage',
+        options: ['I figured out the bug.', 'I figured out the floor.'],
+        answer: 'She figured out the answer.',
+      }),
+    ).toBeNull()
+  })
+
   it('rejects a fill-gap whose answer is not the expression', () => {
     expect(
       exercise({
@@ -92,12 +108,35 @@ const fillGap = {
   answer: 'figure out',
 }
 
+const lesson = {
+  usage: 'Casual, when you find the answer.',
+  translation: 'descifrar',
+  examples: ['She figured out the answer.', 'I figured it out.'],
+  dialog: ['A: Did it work?', 'B: Yes, I figured it out.'],
+}
+
 const learned = (overrides: Record<string, unknown> = {}) => ({
   phrase: 'figure out',
   meaning: 'to understand',
-  example: 'She figured out the answer.',
+  ...lesson,
   exercises: [fillGap],
   ...overrides,
+})
+
+describe('parseLesson', () => {
+  it('rejects a lesson without usage', () => {
+    expect(parseLesson({ ...lesson, usage: ' ' })).toBeNull()
+  })
+
+  it('rejects a lesson with fewer than two examples', () => {
+    expect(
+      parseLesson({ ...lesson, examples: ['I figured it out.'] }),
+    ).toBeNull()
+  })
+
+  it('accepts a lesson with an empty dialog', () => {
+    expect(parseLesson({ ...lesson, dialog: [] })?.dialog).toEqual([])
+  })
 })
 
 const FENCE = '```'

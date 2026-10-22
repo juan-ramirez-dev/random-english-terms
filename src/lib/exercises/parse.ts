@@ -3,14 +3,16 @@ import { normalizeText } from './grade'
 import type {
   Exercise,
   Expression,
+  Lesson,
   MatchExercise,
+  OrderExercise,
   PendingPhrase,
   StoredExercise,
 } from './types'
 
 // The AI's JSON is untrusted: nothing reaches the database or the screen without passing here.
 
-type PlainExercise = Exclude<Exercise, MatchExercise>
+type PlainExercise = Exclude<Exercise, MatchExercise | OrderExercise>
 
 // An expression the AI explained, ready to save.
 export interface Learned {
@@ -22,6 +24,7 @@ export interface Learned {
 const GAP = '___'
 const MIN_OPTIONS = 2
 const MAX_OPTIONS = 6
+const MIN_EXAMPLES = 2
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null
@@ -49,6 +52,20 @@ function uniqueOptions(options: string[] | null): string[] | null {
 }
 
 const sameText = (a: string, b: string) => normalizeText(a) === normalizeText(b)
+
+// Usage and at least two examples, or the lesson teaches nothing. A missing dialog is fine.
+export function parseLesson(raw: unknown): Lesson | null {
+  if (!isObject(raw)) return null
+  const usage = text(raw.usage)
+  const examples = (texts(raw.examples) ?? []).filter(Boolean)
+  if (!usage || examples.length < MIN_EXAMPLES) return null
+  return {
+    usage,
+    translation: text(raw.translation),
+    examples,
+    dialog: (texts(raw.dialog) ?? []).filter(Boolean),
+  }
+}
 
 // One exercise for `expression`. null = the AI's answer is not usable.
 export function parseExercise(
@@ -99,6 +116,17 @@ export function parseExercise(
         options: shuffle(options, seed),
       }
     }
+    case 'usage': {
+      const options = uniqueOptions(texts(raw.options))
+      const right = options?.find(o => sameText(o, answer))
+      if (!options || !right) return null
+      return {
+        ...base,
+        kind: 'usage',
+        answer: right,
+        options: shuffle(options, seed),
+      }
+    }
     default:
       return null
   }
@@ -106,7 +134,7 @@ export function parseExercise(
 
 const toStored = (e: PlainExercise): StoredExercise => ({
   kind: e.kind,
-  sentence: e.kind === 'multiple-choice' ? '' : e.sentence,
+  sentence: e.kind === 'fill-gap' || e.kind === 'context' ? e.sentence : '',
   options: e.kind === 'fill-gap' ? [] : e.options,
   answer: e.answer,
 })
@@ -136,15 +164,16 @@ export function parseLearned(
     const key = normalizeText(text(item.phrase))
     const asked = wanted.get(key)
     const meaning = text(item.meaning)
-    const example = text(item.example)
-    if (!asked || !meaning || !example) continue
+    const lesson = parseLesson(item)
+    if (!asked || !meaning || !lesson) continue
     wanted.delete(key)
     const expression: Expression = {
       id: crypto.randomUUID(),
       phrase: asked.phrase,
       type: asked.type,
       meaning,
-      example,
+      example: lesson.examples[0],
+      lesson,
       mastery: 'new',
     }
     const exercises = item.exercises

@@ -83,8 +83,9 @@ export const es: Messages = {
       n === 1 ? 'Aprender la 1 que elegí' : `Aprender las ${n} que elegí`,
     keepSwiping: (n: number) =>
       n === 1 ? 'Seguir (queda 1)' : `Seguir (quedan ${n})`,
-    done: 'Ya revisaste todas las expresiones de este texto.',
-    nothingNew: 'No hay expresiones nuevas en este texto.',
+    fromList: 'No está en este texto: viene de la lista incluida.',
+    done: 'Ya revisaste todas las expresiones por ahora.',
+    nothingNew: 'No quedan expresiones nuevas.',
   },
 
   learn: {
@@ -119,8 +120,19 @@ export const es: Messages = {
       'multiple-choice': '¿Qué significa?',
       'fill-gap': 'Completa el hueco',
       context: '¿Cuál encaja?',
+      usage: '¿Cuál la usa bien?',
       match: 'Empareja',
+      order: 'Ordena las palabras',
     },
+    lesson: {
+      title: 'Frase nueva',
+      usage: 'Cuándo usarla',
+      translation: 'En español',
+      examples: 'Ejemplos',
+      dialog: 'En una conversación',
+      start: 'Entendido, a practicar',
+    },
+    orderHint: 'Toca las palabras en orden. Tócala otra vez para quitarla.',
     typeHere: 'Escribe la expresión',
     check: 'Comprobar',
     next: 'Siguiente',
