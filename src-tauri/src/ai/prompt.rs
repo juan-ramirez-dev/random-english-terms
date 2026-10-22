@@ -85,6 +85,7 @@ pub fn schema(task: &Task) -> Value {
     }
 }
 
+// Copied in src/lib/exercises/claude-prompt.ts for the Claude paste: change both.
 const LEARN_RULES: &str = "You help a person learn English expressions they picked from their own readings and meetings.
 
 You get a list of expressions. Each one has its \"phrase\" (base form), its \"type\" and the \"sentence\" where the person saw it. An empty \"sentence\" means they didn't see it anywhere: use its most common meaning.
@@ -143,17 +144,6 @@ pub fn user_message(task: &Task) -> String {
         })
         .to_string(),
     }
-}
-
-// The same prompt as a single message, for the user to paste into a chat app.
-pub fn for_chat(task: &Task) -> String {
-    let schema = serde_json::to_string_pretty(&schema(task)).unwrap_or_default();
-    format!(
-        "{}\n\nAnswer with JSON only, no other text. It must follow this JSON schema:\n{}\n\nThe expressions:\n{}",
-        system(task),
-        schema,
-        user_message(task)
-    )
 }
 
 // Whatever a provider returns must be JSON. The front validates the shape.

@@ -14,6 +14,7 @@ import {
   pendingToLearn,
   swipeQueue,
 } from '@/lib/api-client/exercises'
+import { getRun, subscribe } from '@/lib/api-client/learn'
 import { deleteText, listTexts } from '@/lib/api-client/library'
 import type { Decision, Expression } from '@/lib/exercises/types'
 import { usePreferences } from '@/lib/i18n/context'
@@ -56,6 +57,11 @@ export default function MaterialPage() {
   const [attempt, setAttempt] = useState(0)
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [step, setStep] = useState<Step | null>(null)
+  // The text's expressions, refreshed while the AI writes new ones.
+  const [fresh, setFresh] = useState<{
+    key: string
+    expressions: Expression[]
+  } | null>(null)
 
   // setState lives in the .then callback, not synchronously in the effect.
   const load = useCallback(() => listTexts().then(setTexts), [])
@@ -102,7 +108,30 @@ export default function MaterialPage() {
     }
   }, [id, key])
 
+  // Each phrase the AI saves shows up at once; the end of the run reloads the rest.
+  useEffect(() => {
+    if (!id || !key) return
+    let cancelled = false
+    const stop = subscribe(() => {
+      const run = getRun()
+      if (!run?.running) {
+        setAttempt(a => a + 1)
+        return
+      }
+      if (run.ready.length === 0) return
+      listTextExpressions(id).then(expressions => {
+        if (!cancelled) setFresh({ key, expressions })
+      }, logFailure)
+    })
+    return () => {
+      cancelled = true
+      stop()
+    }
+  }, [id, key])
+
   const current = loaded?.key === key ? loaded : null
+  const expressions =
+    (fresh?.key === key ? fresh.expressions : current?.expressions) ?? []
   const stepKey = key ?? ''
   const at = stepFor(step, stepKey)
   const found = current?.queue[at.index]
@@ -214,11 +243,11 @@ export default function MaterialPage() {
               </>
             )}
 
-            {current.expressions.length > 0 && (
+            {expressions.length > 0 && (
               <section>
                 <div className={styles.found}>
                   <p className={styles.foundCount}>
-                    {t.material.learning(current.expressions.length)}
+                    {t.material.learning(expressions.length)}
                   </p>
                   <Button onClick={() => router.push('/practice/')}>
                     <Icon name="practice" size={18} />
@@ -226,7 +255,7 @@ export default function MaterialPage() {
                   </Button>
                 </div>
                 <ul className={styles.expressions}>
-                  {current.expressions.map(e => (
+                  {expressions.map(e => (
                     <li key={e.id}>
                       <Card className={styles.expression}>
                         <div className={styles.expressionTop}>

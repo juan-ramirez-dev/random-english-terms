@@ -94,6 +94,8 @@ export const es: Messages = {
     hint: 'Obtén el significado, un ejemplo y ejercicios para cada una.',
     withAi: 'Generar con mi IA',
     generating: 'Escribiendo tus ejercicios…',
+    progress: (done: number, total: number) => `${done} de ${total} listas`,
+    failedOne: 'No se pudo escribir esta. Queda aquí para la próxima.',
     orClaude: 'O usa Claude',
     claudeHint:
       'Copia el prompt, pégalo en Claude y luego pega aquí su respuesta.',
@@ -111,6 +113,8 @@ export const es: Messages = {
   practice: {
     title: 'Practicar',
     building: 'Preparando tu sesión…',
+    moreComing: (done: number, total: number) =>
+      `${done} de ${total} frases nuevas listas. Las demás van en camino.`,
     nothing: 'Aún no hay nada que practicar.',
     nothingHint: 'Abre un texto en Material y elige lo que quieres aprender.',
     goMaterial: 'Ir a Material',

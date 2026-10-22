@@ -58,9 +58,6 @@ export const generate = (choice: AiChoice, task: AiTask) =>
     task,
   })
 
-// The same prompt as text, for the user to paste into Claude.
-export const chatPrompt = (task: AiTask) => call<string>('ai_prompt', { task })
-
 export const listModels = () => call<LocalModel[]>('models_status')
 
 export async function downloadModel(

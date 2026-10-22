@@ -91,6 +91,8 @@ export const en = {
     hint: 'Get the meaning, an example and exercises for each one.',
     withAi: 'Generate with my AI',
     generating: 'Writing your exercises…',
+    progress: (done: number, total: number) => `${done} of ${total} ready`,
+    failedOne: 'Couldn’t write this one. It stays here for next time.',
     orClaude: 'Or use Claude',
     claudeHint:
       'Copy the prompt, paste it in Claude, then paste its answer here.',
@@ -108,6 +110,8 @@ export const en = {
   practice: {
     title: 'Practice',
     building: 'Building your session…',
+    moreComing: (done: number, total: number) =>
+      `${done} of ${total} new phrases ready. The rest are on the way.`,
     nothing: 'Nothing to practice yet.',
     nothingHint: 'Open a text in Material and pick what you want to learn.',
     goMaterial: 'Go to Material',

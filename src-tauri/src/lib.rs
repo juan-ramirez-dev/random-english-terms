@@ -86,7 +86,6 @@ pub fn run() {
             ai::ai_save_key,
             ai::ai_delete_key,
             ai::ai_generate,
-            ai::ai_prompt,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
