@@ -149,6 +149,13 @@ describe('parseLearned', () => {
     expect(result.map(l => l.expression.phrase)).toEqual(['figure out'])
   })
 
+  it('reads an answer whose quotes were turned into curly quotes', () => {
+    const json = JSON.stringify({ expressions: [learned()] })
+    const pasted = json.replace(/"/g, '”')
+    const result = parseLearned(readJson(pasted), pending)
+    expect(result.map(l => l.expression.phrase)).toEqual(['figure out'])
+  })
+
   it('ignores phrases that were not requested', () => {
     const extra = learned({ phrase: 'give up', exercises: [] })
     const result = parseLearned({ expressions: [extra, learned()] }, pending)
