@@ -8,8 +8,10 @@ export function grade(exercise: Exercise, answer: Answer): boolean {
   switch (exercise.kind) {
     case 'multiple-choice':
     case 'context':
+    case 'usage':
       return answer === exercise.answer
     case 'fill-gap':
+    case 'order':
       return (
         typeof answer === 'string' &&
         normalizeText(answer) === normalizeText(exercise.answer)

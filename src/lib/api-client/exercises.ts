@@ -1,5 +1,6 @@
 import { modelName, providerName, type AiChoice } from '@/lib/ai/catalog'
 import { buildMatch } from '@/lib/exercises/build-match'
+import { buildOrder } from '@/lib/exercises/build-order'
 import { normalizeText } from '@/lib/exercises/grade'
 import {
   parseExercise,
@@ -11,9 +12,11 @@ import { computeStreak, localDay } from '@/lib/exercises/streak'
 import type {
   Decision,
   Exercise,
+  ExerciseKind,
   Expression,
   Mastery,
   PendingPhrase,
+  SessionStep,
 } from '@/lib/exercises/types'
 import {
   listDecided,
@@ -28,31 +31,42 @@ import {
   setMastery,
 } from '@/lib/local-db/expressions'
 import { addPracticeDay, listPracticeDays } from '@/lib/local-db/practice'
-import { findPhrases } from '@/lib/terms/match'
+import { BUILT_IN, findPhrases } from '@/lib/terms/match'
 import { shuffle } from '@/lib/terms/shuffle'
 import type { FoundPhrase } from '@/lib/terms/types'
 import { chatPrompt, generate, loadChoice, type AiTask } from './ai'
 import { ApiClientError } from './http'
 import { readText } from './library'
 
-const SESSION_SIZE = 10
+// Each phrase brings a lesson and about 6 exercises.
+const SESSION_SIZE = 5
+// Enough cards to keep about 15 even from a short text.
+const QUEUE_SIZE = 50
 // Small enough for the local model's context; each batch is saved on its own.
-const AI_BATCH = 5
+const AI_BATCH = 3
 // One paste stays a reasonable size for Claude's answer.
-export const CLAUDE_MAX = 30
+export const CLAUDE_MAX = 15
 // An unusable answer gets one more try before the user sees an error.
 const RETRIES = 1
 const UNUSABLE = new Set(['badResponse', 'invalidModel'])
 
 // ---- Swipe
 
-// Built-in phrases in the text that weren't swiped yet, in this text or another.
+// Built-in phrases not swiped yet, in this text or another.
+// The text's own come first; random ones from the list fill up to QUEUE_SIZE.
 export async function swipeQueue(textId: string): Promise<FoundPhrase[]> {
   const text = await readText(textId)
   const decided = new Set(await listDecided())
-  return findPhrases(text.content).filter(
-    f => !decided.has(normalizeText(f.phrase)),
+  const fresh = (phrase: string) => !decided.has(normalizeText(phrase))
+  const inText = findPhrases(text.content).filter(f => fresh(f.phrase))
+  const shown = new Set(inText.map(f => f.phrase))
+  const extras = shuffle(
+    BUILT_IN.filter(p => fresh(p.phrase) && !shown.has(p.phrase)),
+    Date.now(),
   )
+    .slice(0, Math.max(0, QUEUE_SIZE - inText.length))
+    .map(p => ({ ...p, sentence: '' }))
+  return [...inText, ...extras]
 }
 
 // Swipes save in the background so the next card shows at once.
@@ -178,9 +192,21 @@ const parseData = (data: string): unknown => {
   }
 }
 
+// Easiest first: recognize the meaning, then pick the phrase, then write it.
+const EASIEST_FIRST: ExerciseKind[] = [
+  'multiple-choice',
+  'match',
+  'context',
+  'usage',
+  'order',
+  'fill-gap',
+]
+
 // Up to SESSION_SIZE pending expressions of one text, or of all of them.
-// One saved exercise each, or a match built from the saved meanings. No AI here.
-export async function startSession(textId: string | null): Promise<Exercise[]> {
+// Each one: its lesson while it's new, then every exercise it has. No AI here.
+export async function startSession(
+  textId: string | null,
+): Promise<SessionStep[]> {
   const all = await dbListExpressions(null)
   const scope = textId ? await dbListExpressions(textId) : all
   const seed = Date.now()
@@ -190,19 +216,28 @@ export async function startSession(textId: string | null): Promise<Exercise[]> {
   ).slice(0, SESSION_SIZE)
   const rows = await listExercises(picked.map(e => e.id))
 
-  return picked.flatMap((expression, i) => {
+  return picked.flatMap((expression, i): SessionStep[] => {
     const s = seed + i
-    const options: Exercise[] = []
+    // One per kind: the step ids are built from it.
+    const byKind = new Map<ExerciseKind, Exercise>()
+    const add = (exercise: Exercise | null) => {
+      if (exercise && !byKind.has(exercise.kind)) {
+        byKind.set(exercise.kind, exercise)
+      }
+    }
     for (const row of rows) {
       if (row.expressionId !== expression.id) continue
       const data = parseData(row.data)
       const raw = typeof data === 'object' ? { ...data, kind: row.kind } : null
-      const exercise = parseExercise(raw, expression, s)
-      if (exercise) options.push(exercise)
+      add(parseExercise(raw, expression, s))
     }
-    const match = buildMatch(expression, all, s)
-    if (match) options.push(match)
-    return options.length > 0 ? [shuffle(options, s)[0]] : []
+    add(buildMatch(expression, all, s))
+    add(buildOrder(expression, s))
+    const exercises = EASIEST_FIRST.flatMap(kind => byKind.get(kind) ?? [])
+    if (exercises.length === 0) return []
+    if (expression.mastery !== 'new') return exercises
+    const lesson = { kind: 'lesson' as const, id: `${expression.id}-lesson` }
+    return [{ ...lesson, expression }, ...exercises]
   })
 }
 
@@ -217,12 +252,14 @@ const NEXT_DOWN: Record<Mastery, Mastery> = {
   mastered: 'learning',
 }
 
-export async function recordResult(
-  id: string,
-  correct: boolean,
-): Promise<void> {
+// This many wrong answers in a session and the phrase goes down a level.
+const DROP_AT = 2
+
+// Once per phrase per session, so one session can't take it from new to mastered.
+export async function recordPhrase(id: string, wrong: number): Promise<void> {
   const current = (await getMastery(id)) ?? 'new'
-  await setMastery(id, correct ? NEXT_UP[current] : NEXT_DOWN[current])
+  if (wrong === 0) await setMastery(id, NEXT_UP[current])
+  else if (wrong >= DROP_AT) await setMastery(id, NEXT_DOWN[current])
 }
 
 export const markKnown = (id: string): Promise<void> =>

@@ -45,6 +45,12 @@
   color: var(--color-text-muted);
 }
 
+.fromList {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .controls {
   display: flex;
   align-items: stretch;

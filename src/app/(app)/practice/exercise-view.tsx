@@ -5,7 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Icon } from '@/components/ui/icon'
 import { grade } from '@/lib/exercises/grade'
-import type { Answer, Exercise, MatchExercise } from '@/lib/exercises/types'
+import type {
+  Answer,
+  Exercise,
+  MatchExercise,
+  OrderExercise,
+} from '@/lib/exercises/types'
 import { usePreferences } from '@/lib/i18n/context'
 import styles from './exercise-view.module.css'
 
@@ -41,7 +46,7 @@ export function ExerciseView({
     <Card className={styles.card}>
       <p className={styles.kind}>{t.practice.kinds[exercise.kind]}</p>
 
-      {exercise.kind === 'multiple-choice' && (
+      {(exercise.kind === 'multiple-choice' || exercise.kind === 'usage') && (
         <>
           <p className={styles.prompt}>{expression.phrase}</p>
           <Options
@@ -76,6 +81,10 @@ export function ExerciseView({
 
       {exercise.kind === 'match' && (
         <Match exercise={exercise} checked={result} onSubmit={submit} />
+      )}
+
+      {exercise.kind === 'order' && (
+        <Order exercise={exercise} checked={result} onSubmit={submit} />
       )}
 
       {!result && (
@@ -264,6 +273,62 @@ function Match({
       </div>
       {!locked && (
         <Button disabled={!complete} onClick={() => onSubmit(pairs)}>
+          {t.practice.check}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+function Order({
+  exercise,
+  checked,
+  onSubmit,
+}: {
+  exercise: OrderExercise
+  checked: { correct: boolean } | null
+  onSubmit: (answer: string) => void
+}) {
+  const { t } = usePreferences()
+  // Indexes into `words`: a sentence can repeat a word.
+  const [picked, setPicked] = useState<number[]>([])
+  const locked = checked !== null
+  const complete = picked.length === exercise.words.length
+  const sentence = picked.map(i => exercise.words[i]).join(' ')
+
+  return (
+    <div className={styles.match}>
+      <p className={styles.hint}>{t.practice.orderHint}</p>
+      <div
+        className={`${styles.built} ${locked ? (checked.correct ? styles.right : styles.wrong) : ''}`}
+      >
+        {picked.map(i => (
+          <button
+            key={i}
+            type="button"
+            className={styles.word}
+            disabled={locked}
+            onClick={() => setPicked(p => p.filter(k => k !== i))}
+          >
+            {exercise.words[i]}
+          </button>
+        ))}
+      </div>
+      <div className={styles.words}>
+        {exercise.words.map((word, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`${styles.word} ${picked.includes(i) ? styles.dim : ''}`}
+            disabled={locked || picked.includes(i)}
+            onClick={() => setPicked(p => [...p, i])}
+          >
+            {word}
+          </button>
+        ))}
+      </div>
+      {!locked && (
+        <Button disabled={!complete} onClick={() => onSubmit(sentence)}>
           {t.practice.check}
         </Button>
       )}

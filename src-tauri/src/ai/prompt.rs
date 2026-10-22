@@ -17,8 +17,8 @@ pub enum Task {
     Learn { items: Vec<Item> },
 }
 
-// Meaning, example and three exercises: about this many tokens per phrase.
-const TOKENS_PER_ITEM: i32 = 600;
+// A lesson and four exercises: about this many tokens per phrase.
+const TOKENS_PER_ITEM: i32 = 1300;
 
 impl Task {
     // Name for the providers' json-schema mode.
@@ -50,11 +50,16 @@ pub fn schema(task: &Task) -> Value {
                     "items": {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": ["phrase", "meaning", "example", "exercises"],
+                        "required": [
+                            "phrase", "meaning", "usage", "translation", "examples", "dialog", "exercises"
+                        ],
                         "properties": {
                             "phrase": { "type": "string" },
                             "meaning": { "type": "string" },
-                            "example": { "type": "string" },
+                            "usage": { "type": "string" },
+                            "translation": { "type": "string" },
+                            "examples": { "type": "array", "items": { "type": "string" } },
+                            "dialog": { "type": "array", "items": { "type": "string" } },
                             "exercises": {
                                 "type": "array",
                                 "items": {
@@ -64,7 +69,7 @@ pub fn schema(task: &Task) -> Value {
                                     "properties": {
                                         "kind": {
                                             "type": "string",
-                                            "enum": ["multiple-choice", "fill-gap", "context"]
+                                            "enum": ["multiple-choice", "fill-gap", "context", "usage"]
                                         },
                                         "sentence": { "type": "string" },
                                         "options": { "type": "array", "items": { "type": "string" } },
@@ -82,13 +87,16 @@ pub fn schema(task: &Task) -> Value {
 
 const LEARN_RULES: &str = "You help a person learn English expressions they picked from their own readings and meetings.
 
-You get a list of expressions. Each one has its \"phrase\" (base form), its \"type\" and the \"sentence\" where the person saw it.
+You get a list of expressions. Each one has its \"phrase\" (base form), its \"type\" and the \"sentence\" where the person saw it. An empty \"sentence\" means they didn't see it anywhere: use its most common meaning.
 
-For EACH expression, return:
+Before any exercise, the person reads a short lesson. For EACH expression, return:
 - \"phrase\": copied exactly as given.
 - \"meaning\": one short line in simple English, the meaning it has in that sentence. Don't use the phrase itself in it.
-- \"example\": one new, short, natural sentence that uses the phrase.
-- \"exercises\": exactly 3, one of each kind below. Always fill all four fields; a field the kind doesn't use is \"\" or [].
+- \"usage\": one or two short lines on when to use it: the situation, and if it's formal, casual or neutral.
+- \"translation\": the closest natural way to say it in Spanish.
+- \"examples\": exactly 3 new, short, natural sentences that use the phrase, each in a different situation.
+- \"dialog\": a short dialog of 3 or 4 lines that uses the phrase once. Each line starts with \"A: \" or \"B: \".
+- \"exercises\": exactly 4, one of each kind below. Always fill all four fields; a field the kind doesn't use is \"\" or [].
 
 1. \"multiple-choice\": the person sees the phrase and picks its meaning.
    - \"options\": 3 meanings. One is \"meaning\" copied exactly; the other two are wrong but believable.
@@ -107,6 +115,12 @@ For EACH expression, return:
    - \"options\": 3 phrases. One is the phrase; the other two are other real English expressions that clearly don't fit.
    - \"answer\": the phrase exactly as given.
    Example: {\"kind\":\"context\",\"sentence\":\"Please don't ___ about the surprise party.\",\"options\":[\"spill the beans\",\"look forward to\",\"break the ice\"],\"answer\":\"spill the beans\"}
+
+4. \"usage\": the person picks the sentence that uses the phrase correctly.
+   - \"options\": 3 NEW sentences that all contain the phrase. Only one uses it with the right meaning; the other two use it in a situation where it makes no sense.
+   - \"answer\": the right sentence copied exactly.
+   - \"sentence\": \"\".
+   Example: {\"kind\":\"usage\",\"sentence\":\"\",\"options\":[\"I look forward to seeing you next week.\",\"I look forward to yesterday's meeting.\",\"She looked forward to the floor.\"],\"answer\":\"I look forward to seeing you next week.\"}
 
 Rules:
 - Return one entry per expression you got, in the same order. Never add others.

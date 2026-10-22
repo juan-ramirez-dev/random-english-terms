@@ -1,4 +1,5 @@
 import { normalizeText } from '@/lib/exercises/grade'
+import { parseLesson } from '@/lib/exercises/parse'
 import type { Expression, ExpressionType, Mastery } from '@/lib/exercises/types'
 import { getDb, now } from './db'
 
@@ -8,12 +9,30 @@ interface Row {
   type: ExpressionType
   meaning: string
   example: string
+  lesson: string
   mastery: Mastery
 }
 
-const COLUMNS = 'id, phrase, type, meaning, example, mastery'
+const COLUMNS = 'id, phrase, type, meaning, example, lesson, mastery'
 
-const toExpression = (r: Row): Expression => ({ ...r })
+const readLesson = (json: string): unknown => {
+  try {
+    return JSON.parse(json)
+  } catch {
+    return null
+  }
+}
+
+// A broken lesson still leaves the example to show.
+const toExpression = ({ lesson, ...r }: Row): Expression => ({
+  ...r,
+  lesson: parseLesson(readLesson(lesson)) ?? {
+    usage: '',
+    translation: '',
+    examples: [r.example],
+    dialog: [],
+  },
+})
 
 export async function insertExpression(
   textId: string,
@@ -22,8 +41,8 @@ export async function insertExpression(
   const db = await getDb()
   await db.execute(
     `INSERT INTO expressions
-       (id, text_id, phrase, normalized, type, meaning, example, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, text_id, phrase, normalized, type, meaning, example, lesson, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       expression.id,
       textId,
@@ -32,6 +51,7 @@ export async function insertExpression(
       expression.type,
       expression.meaning,
       expression.example,
+      JSON.stringify(expression.lesson),
       now(),
     ],
   )

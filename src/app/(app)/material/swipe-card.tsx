@@ -44,7 +44,11 @@ export function SwipeCard({
       <div className={styles.card}>
         <Badge type={found.type}>{t.expressions.types[found.type]}</Badge>
         <span className={styles.phrase}>{found.phrase}</span>
-        <p className={styles.sentence}>{found.sentence}</p>
+        {found.sentence ? (
+          <p className={styles.sentence}>{found.sentence}</p>
+        ) : (
+          <p className={styles.fromList}>{t.swipe.fromList}</p>
+        )}
       </div>
       <div className={styles.controls}>
         <button

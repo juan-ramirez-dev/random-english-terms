@@ -80,8 +80,9 @@ export const en = {
       n === 1 ? 'Learn the 1 I picked' : `Learn the ${n} I picked`,
     keepSwiping: (n: number) =>
       n === 1 ? 'Keep swiping (1 left)' : `Keep swiping (${n} left)`,
-    done: 'You went through every expression in this text.',
-    nothingNew: 'No new expressions in this text.',
+    fromList: 'Not in this text: from the built-in list.',
+    done: 'You went through every expression for now.',
+    nothingNew: 'No new expressions left.',
   },
 
   learn: {
@@ -116,8 +117,19 @@ export const en = {
       'multiple-choice': 'What does it mean?',
       'fill-gap': 'Fill the gap',
       context: 'Which one fits?',
+      usage: 'Which one uses it right?',
       match: 'Match the pairs',
+      order: 'Put the words in order',
     },
+    lesson: {
+      title: 'New phrase',
+      usage: 'When to use it',
+      translation: 'In Spanish',
+      examples: 'Examples',
+      dialog: 'In a conversation',
+      start: 'Got it, let’s practice',
+    },
+    orderHint: 'Tap the words in order. Tap one again to take it back.',
     typeHere: 'Type the expression',
     check: 'Check',
     next: 'Next',

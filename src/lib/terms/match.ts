@@ -39,34 +39,44 @@ function forms(base: string): string[] {
   return out
 }
 
-// First word (any form) → the entries that start with it, longest first.
-function buildIndex(groups: readonly DictionaryGroup[]) {
-  const seen = new Set<string>()
-  const index = new Map<string, Entry[]>()
+// Each phrase once: the first group that lists it sets its type.
+function flatten(groups: readonly DictionaryGroup[]) {
+  const seen = new Map<string, ExpressionType>()
   for (const group of groups) {
     for (const [type, phrases] of Object.entries(group) as [
       ExpressionType,
       readonly string[],
     ][]) {
       for (const phrase of phrases) {
-        const [first, ...rest] = words(phrase)
-        if (!first || seen.has(phrase)) continue
-        seen.add(phrase)
-        const separable = type === 'phrasal-verb' && rest.length === 1
-        const entry = { phrase, type, rest, separable }
-        for (const form of new Set(forms(first))) {
-          index.set(form, [...(index.get(form) ?? []), entry])
-        }
+        if (!seen.has(phrase)) seen.set(phrase, type)
       }
     }
   }
-  for (const list of index.values()) {
-    list.sort((a, b) => b.rest.length - a.rest.length)
+  return Array.from(seen, ([phrase, type]) => ({ phrase, type }))
+}
+
+// Every built-in phrase, with its type.
+export const BUILT_IN = flatten([PHRASAL_VERBS, TECH, PROFESSIONAL, EVERYDAY])
+
+// First word (any form) → the entries that start with it, longest first.
+function buildIndex(list: typeof BUILT_IN) {
+  const index = new Map<string, Entry[]>()
+  for (const { phrase, type } of list) {
+    const [first, ...rest] = words(phrase)
+    if (!first) continue
+    const separable = type === 'phrasal-verb' && rest.length === 1
+    const entry = { phrase, type, rest, separable }
+    for (const form of new Set(forms(first))) {
+      index.set(form, [...(index.get(form) ?? []), entry])
+    }
+  }
+  for (const entries of index.values()) {
+    entries.sort((a, b) => b.rest.length - a.rest.length)
   }
   return index
 }
 
-const INDEX = buildIndex([PHRASAL_VERBS, TECH, PROFESSIONAL, EVERYDAY])
+const INDEX = buildIndex(BUILT_IN)
 
 // Index of the last word, or -1 when the entry isn't here.
 function endAt(entry: Entry, tokens: string[], at: number): number {
