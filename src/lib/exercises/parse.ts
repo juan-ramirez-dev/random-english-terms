@@ -139,16 +139,22 @@ const toStored = (e: PlainExercise): StoredExercise => ({
   answer: e.answer,
 })
 
+const tryParse = (json: string): unknown => {
+  try {
+    return JSON.parse(json)
+  } catch {
+    return null
+  }
+}
+
 // Claude wraps its answer in ```json … ``` or adds a line before it: keep the object only.
+// Copying through some apps turns " into “ ”: straighten them only if it doesn't parse as is.
 export function readJson(pasted: string): unknown {
   const start = pasted.indexOf('{')
   const end = pasted.lastIndexOf('}')
   if (start === -1 || end < start) return null
-  try {
-    return JSON.parse(pasted.slice(start, end + 1))
-  } catch {
-    return null
-  }
+  const json = pasted.slice(start, end + 1)
+  return tryParse(json) ?? tryParse(json.replace(/[“”„‟″]/g, '"'))
 }
 
 // Only the phrases that were asked for, each once. One needs at least one valid exercise.
