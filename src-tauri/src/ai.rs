@@ -123,9 +123,3 @@ pub async fn ai_generate(
         Online::Gemini => gemini::generate(&http, &key, &model, &task).await,
     }
 }
-
-// The same prompt as `ai_generate`, as text the user pastes into Claude or another chat.
-#[tauri::command]
-pub fn ai_prompt(task: prompt::Task) -> String {
-    prompt::for_chat(&task)
-}

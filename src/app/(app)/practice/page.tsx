@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Icon } from '@/components/ui/icon'
@@ -12,6 +12,7 @@ import {
   recordPhrase,
   startSession,
 } from '@/lib/api-client/exercises'
+import { getRun, subscribe } from '@/lib/api-client/learn'
 import { usePreferences } from '@/lib/i18n/context'
 import type { SessionStep } from '@/lib/exercises/types'
 import { useSelectedText } from '../selected-text-provider'
@@ -36,6 +37,8 @@ const nextPhrase = (steps: SessionStep[], from: number) => {
 const logFailure = (error: unknown) =>
   console.error('Could not save your progress', error)
 
+const noRun = () => null
+
 export default function PracticePage() {
   const { t, error: errorText } = usePreferences()
   const router = useRouter()
@@ -47,6 +50,8 @@ export default function PracticePage() {
   // Wrong answers of the phrase on screen. Saved once its last step is done.
   const [wrong, setWrong] = useState(0)
   const [streak, setStreak] = useState<number | null>(null)
+  // The AI may still be writing phrases started from Material.
+  const learning = useSyncExternalStore(subscribe, getRun, noRun)
 
   const textId = selected?.id ?? null
   const key = `${textId}:${attempt}`
@@ -115,6 +120,16 @@ export default function PracticePage() {
 
   return (
     <main className={styles.page}>
+      {learning?.running && learning.phrases.length > 0 && (
+        <p className={styles.coming}>
+          <span className={styles.dot} />
+          {t.practice.moreComing(
+            learning.ready.length,
+            learning.phrases.length,
+          )}
+        </p>
+      )}
+
       {!current && (
         <Card className={styles.center}>
           <span className={styles.spinner} />
