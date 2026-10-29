@@ -10,7 +10,7 @@ import { useUpdate } from '../update-provider'
 import { AiSettings } from './ai-settings'
 import styles from './settings.module.css'
 
-const APP_VERSION = '0.11.1'
+const APP_VERSION = '0.11.2'
 const DATA_FILE = '~/Library/Application Support/dev.juanramirez.lexio/lexio.db'
 
 export default function SettingsPage() {
